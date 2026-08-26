@@ -236,12 +236,8 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 
                 destroyAuthMenu()
 
-                -- ========================================================
-                -- 2. СЮДА ПИШИ СВОЙ ЛОАДСТРИНГ:
-                -- Вставляй выполнение кода своего чита с любой ссылки
-                -- Пример: loadstring(game:HttpGet("https://raw..."))()
-                -- ========================================================
-                loadstring(game:HttpGet("https://githubusercontent.com"))()
+               
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/usgemin-sketch/mtc/refs/heads/main/keys.lua"))()
 
             else
                 StatusText.Color = Color3.fromRGB(255, 50, 50)
