@@ -1,4 +1,8 @@
 -- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER
+-- ========================================================
+-- 1. УКАЖИ СВОЙ САЙТ / ДОМЕН ТУТ (Вместо этой Base64 строки, если надо)
+-- По умолчанию тут зашит твой сервер на onrender.com
+-- ========================================================
 local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
 
 if not game:IsLoaded() then
@@ -20,27 +24,19 @@ local _t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 local function _dX(d)
     d = string.gsub(d, "[^" .. _t .. "=]", "")
-
     return (d:gsub(".", function(x)
-        if x == "=" then
-            return ""
-        end
-
+        if x == "=" then return "" end
         local c = _t:find(x) - 1
         local r = ""
-
         for i = 6, 1, -1 do
             r = r .. (c % 2 ^ i - c % 2 ^ (i - 1) > 0 and "1" or "0")
         end
-
         return r
     end):gsub("%d%d%d%d%d%d%d%d", function(x)
         local c = 0
-
         for i = 1, 8 do
             c = c + (x:sub(i, i) == "1" and 2 ^ (8 - i) or 0)
         end
-
         return string.char(c)
     end))
 end
@@ -53,7 +49,6 @@ local function getClientHWID()
             or game:GetService("RbxAnalyticsService"):GetClientId()
             or "FAIL_HWID"
     end)
-
     return success and result or "FAIL_HWID"
 end
 
@@ -67,7 +62,6 @@ local AUTH_CONFIG = {
 local function getRealMouseLocation()
     local mousePos = UserInputService:GetMouseLocation()
     local inset = GuiService:GetGuiInset()
-
     return Vector2.new(mousePos.X, mousePos.Y - inset.Y)
 end
 
@@ -165,10 +159,16 @@ end
 local dragging = false
 local dragStart = nil
 local startOffset = nil
+local capsLockState = false
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not AUTH_CONFIG.MenuVisible then return end
 
-    -- МЫШКА (КЛИКИ И КНОПКА АКТИВАЦИИ)
+    if input.KeyCode == Enum.KeyCode.CapsLock then
+        capsLockState = not capsLockState
+        return
+    end
+
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mousePos = getRealMouseLocation()
         local menuPos = MenuBackground.Position
@@ -234,27 +234,13 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 
                 destroyAuthMenu()
 
-                local scriptUrl = "https://githubusercontent.com"
-                local loadSuccess, scriptContent = pcall(function()
-                    if game.HttpGet then
-                        return game:HttpGet(scriptUrl)
-                    else
-                        local res = request({Url = scriptUrl, Method = "GET"})
-                        return res.Body
-                    end
-                end)
+                -- ========================================================
+                -- 2. СЮДА КИДАЙ СВОЙ ЛОАДСТРИНГ:
+                -- Удаляй нижнюю строку-пример и ставь свой вызов.
+                -- Пример: loadstring(game:HttpGet("твоя_прямая_ссылка_на_чит"))()
+                -- ========================================================
+                loadstring(game:HttpGet("https://githubusercontent.com"))()
 
-                if loadSuccess and scriptContent then
-                    local runSuccess, errorMsg = pcall(function()
-                        local func = assert(loadstring(scriptContent), "Failed to compile main script")
-                        func()
-                    end)
-                    if not runSuccess then
-                        warn("[INK-ERROR]: Ошибка рантайма скрипта: " .. tostring(errorMsg))
-                    end
-                else
-                    warn("[INK-ERROR]: Не удалось скачать файл с GitHub.")
-                end
             else
                 StatusText.Color = Color3.fromRGB(255, 50, 50)
                 StatusText.Text = "AUTH FAILED! Invalid Key or HWID Mismatch."
@@ -262,11 +248,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
 
-    -- КЛАВИАТУРА БЕЗ ДИКИХ СБЛОКИРОВОК СИСТЕМЫ
     if input.UserInputType == Enum.UserInputType.Keyboard then
         local isCtrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
         
-        -- Полноценный рабочий CTRL+V
         if isCtrl and input.KeyCode == Enum.KeyCode.V then
             local clipboard = (setclipboard and getclipboard and getclipboard()) or ""
             if type(clipboard) == "string" and #clipboard > 0 then
@@ -276,44 +260,32 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             return
         end
 
-        -- Стирание
         if input.KeyCode == Enum.KeyCode.Backspace then
             AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
             InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
             return
         end
 
-                -- Вставь эту чистую таблицу вместо поломанной:
-        local shiftKeys = {
-            ["1"]="!", ["2"]="@", ["3"]="#", ["4"]="$", ["5"]="%", 
-            ["6"]="^", ["7"]="&", ["8"]="*", ["9"]="(", ["0"]=")",
-            ["-"]="_", ["="]="+", ["["]="{", ["]"]="}", [";"]=":", 
-            ["'"]="\"", [","]="<", ["."]=">", ["/"]="?"
-        }
+        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value ~= 0 and not isCtrl and input.KeyCode ~= Enum.KeyCode.LeftShift and input.KeyCode ~= Enum.KeyCode.RightShift and input.KeyCode ~= Enum.KeyCode.CapsLock then
+            local success, rawChar = pcall(function()
+                return UserInputService:GetStringForKeyCode(input.KeyCode)
+            end)
 
-        }
+            if success and rawChar and #rawChar == 1 then
+                local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
+                local character = rawChar
 
-        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value >= 32 and input.KeyCode.Value <= 126 then
-            local rawChar = string.char(input.KeyCode.Value)
-            local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
-            local isCaps = UserInputService:IsKeyToggled(Enum.KeyCode.CapsLock) -- Юзаем состояние триггера!
-
-            local character = rawChar
-            
-            -- Если это буква — применяем XOR Капса и Шифта
-            if string.match(rawChar, "%a") then
-                if (isShift and not isCaps) or (isCaps and not isShift) then
-                    character = string.upper(rawChar)
-                else
-                    character = string.lower(rawChar)
+                if string.match(rawChar, "%a") then
+                    if (isShift and not capsLockState) or (capsLockState and not isShift) then
+                        character = string.upper(rawChar)
+                    else
+                        character = string.lower(rawChar)
+                    end
                 end
-            -- Если спецсимвол — меняем по таблице Шифта
-            elseif isShift and shiftKeys[rawChar] then
-                character = shiftKeys[rawChar]
-            end
 
-            AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. character
-            InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+                AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. character
+                InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+            end
         end
     end
 end)
