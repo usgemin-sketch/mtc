@@ -1,8 +1,9 @@
 
 
-local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
-if not game:IsLoaded() then game.Loaded:Wait() end
-local HttpService = game:GetService("HttpService")local UserInputService = game:GetService("UserInputService")local ContextActionService = game:GetService("ContextActionService")local Camera = workspace.CurrentCameralocal Players = game:GetService("Players")local request = syn and syn.request or http_request or request
+
+local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="if not game:IsLoaded() then game.Loaded:Wait() end
+local HttpService = game:GetService("HttpService")local UserInputService = game:GetService("UserInputService")local ContextActionService = game:GetService("ContextActionService")local GuiService = game:GetService("GuiService")local Camera = workspace.CurrentCameralocal Players = game:GetService("Players")
+-- Универсальный фолбэк для HTTP-запросов в современных чит-средахlocal request = syn and syn.request or http_request or (http and http.request) or request
 local _t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'local function _dX(d)
     d = string.gsub(d, '[^'.._t..'=]', '')
     return (d:gsub('.', function(x)
@@ -19,7 +20,7 @@ local _t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'loc
 local BASE_API_URL = _dX(_vX)
 local function getClientHWID()
     local success, result = pcall(function() 
-        return game:GetService("RbxAnalyticsService"):GetClientId() or (gethwid and gethwid()) or "FAIL_HWID" 
+        return (gethwid and gethwid()) or game:GetService("RbxAnalyticsService"):GetClientId() or "FAIL_HWID" 
     end)
     return success and result or "FAIL_HWID"end
 local AUTH_CONFIG = {
@@ -28,6 +29,10 @@ local AUTH_CONFIG = {
     MenuVisible = true,
     CurrentInput = ""
 }
+-- Функция получения реальной позиции мыши с учетом смещения интерфейса Roblox (Inset)local function getRealMouseLocation()
+    local mousePos = UserInputService:GetMouseLocation()
+    local inset, _ = GuiService:GetGuiInset()
+    return Vector2.new(mousePos.X, mousePos.Y - inset.Y)end
 local startPos = Vector2.new((Camera.ViewportSize.X / 2) - (AUTH_CONFIG.Width / 2), (Camera.ViewportSize.Y / 2) - (AUTH_CONFIG.Height / 2))
 local MenuBackground = Drawing.new("Square")local MenuHeader = Drawing.new("Square")local MenuTitle = Drawing.new("Text")local InputDisplay = Drawing.new("Text")local ActivateButton = Drawing.new("Square")local ButtonText = Drawing.new("Text")local StatusText = Drawing.new("Text")
 local function initAuthMenu()
@@ -86,29 +91,40 @@ local function initAuthMenu()
     
     print("[INK-GUI]: Панель успешно создана и выведена на экран!")end
 local function updateMenuPosition(newPos)
-    MenuBackground.Position = newPos; MenuHeader.Position = newPos
+    MenuBackground.Position = newPos
+    MenuHeader.Position = newPos
     MenuTitle.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
     InputDisplay.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
     ActivateButton.Position = newPos + Vector2.new((AUTH_CONFIG.Width / 2) - 90, 145)
     ButtonText.Position = ActivateButton.Position + Vector2.new(90, 11)
     StatusText.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)end
 local function destroyAuthMenu()
-    MenuBackground:Remove(); MenuHeader:Remove(); MenuTitle:Remove()
-    InputDisplay:Remove(); ActivateButton:Remove(); ButtonText:Remove(); StatusText:Remove()
+    MenuBackground:Remove()
+    MenuHeader:Remove()
+    MenuTitle:Remove()
+    InputDisplay:Remove()
+    ActivateButton:Remove()
+    ButtonText:Remove()
+    StatusText:Remove()
     ContextActionService:UnbindCoreAction("BlockGameInput")end
 local dragging, dragStart, startOffset = false, nil, nil
-
+-- Обработка кликов мыши, перетаскивания и нажатия кнопки активации
 UserInputService.InputBegan:Connect(function(input)
     if not AUTH_CONFIG.MenuVisible then return end
+    
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mousePos = UserInputService:GetMouseLocation()
+        local mousePos = getRealMouseLocation()
         local menuPos = MenuBackground.Position
         
+        -- Перетаскивание за верхний бар (Header)
         if mousePos.X >= menuPos.X and mousePos.X <= (menuPos.X + AUTH_CONFIG.Width) and mousePos.Y >= menuPos.Y and mousePos.Y <= (menuPos.Y + 45) then
-            dragging = true; dragStart = mousePos; startOffset = menuPos
+            dragging = true
+            dragStart = mousePos
+            startOffset = menuPos
             return
         end
 
+        -- Нажатие кнопки активации
         local btnPos = ActivateButton.Position
         if mousePos.X >= btnPos.X and mousePos.X <= (btnPos.X + 180) and mousePos.Y >= btnPos.Y and mousePos.Y <= (btnPos.Y + 40) then
             ActivateButton.Color = Color3.fromRGB(45, 45, 45)
@@ -123,8 +139,14 @@ UserInputService.InputBegan:Connect(function(input)
                 local rblxName = Players.LocalPlayer and Players.LocalPlayer.Name or "Unknown"
                 local cacheBuster = math.random(100000, 999999)
                 
-                local targetUrl = BASE_API_URL .. "/verify?key=" .. AUTH_CONFIG.CurrentInput .. "&hwid=" .. hwid .. "&username=" .. rblxName .. "&cb=" .. cacheBuster
+                local targetUrl = BASE_API_URL .. "/verify?key=" .. HttpService:UrlEncode(AUTH_CONFIG.CurrentInput) .. "&hwid=" .. HttpService:UrlEncode(hwid) .. "&username=" .. HttpService:UrlEncode(rblxName) .. "&cb=" .. cacheBuster
                 
+                if not request then
+                    StatusText.Color = Color3.fromRGB(255, 50, 50)
+                    StatusText.Text = "CRITICAL ERROR: Executor does not support HTTP Requests!"
+                    return
+                end
+
                 local success, response = pcall(function() return request({Url = targetUrl, Method = "GET"}) end)
                 if success and response.StatusCode == 200 then
                     local parseSuccess, data = pcall(function() 
@@ -141,8 +163,12 @@ UserInputService.InputBegan:Connect(function(input)
                         if scriptSuccess and scriptResponse.StatusCode == 200 then
                             AUTH_CONFIG.MenuVisible = false
                             destroyAuthMenu()
-                            gcinfo()
-                            loadstring(scriptResponse.Body)()
+                            local executableCode, compileError = loadstring(scriptResponse.Body)
+                            if executableCode then
+                                executableCode()
+                            else
+                                warn("[INK-ERROR]: Скрипт-модуль поврежден: " .. tostring(compileError))
+                            end
                             return
                         end
                     end
@@ -155,63 +181,64 @@ UserInputService.InputBegan:Connect(function(input)
             end
         end
     endend)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        updateMenuPosition(startOffset + (UserInputService:GetMouseLocation() - dragStart))
-    endend)
-UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-local AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
-UserInputService.InputBegan:Connect(function(input)
+-- Хэндлер клавиатурного ввода для Drawing GUI (так как у Drawing нет фокуса, ловим глобально)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not AUTH_CONFIG.MenuVisible then return end
-    local keyCode = input.KeyCode
-    local keyName = keyCode.Name
+    
+    -- Горячие клавиши: проверка буфера обмена (CTRL + V)
+    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
+        if input.KeyCode == Enum.KeyCode.V then
+            local clipboardText = (getclipboard and getclipboard()) or (Clipboard and Clipboard.read)
+            if clipboardText then
+                -- Чистим от лишних пробелов и переносов строки
+                local cleanText = string.gsub(clipboardText, "[\r\n%s]", "")
+                AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. cleanText
 
-    if keyCode == Enum.KeyCode.V and (UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)) then
-        local success, clipboardText = pcall(function() return getclipboard() or syn.getclipboard() end)
-        if success and clipboardText then
-            AUTH_CONFIG.CurrentInput = string.gsub(clipboardText, "%s+", "")
-            InputDisplay.Text = "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
-        end
-        return
-    end
-
-    if keyCode == Enum.KeyCode.Minus or keyName == "Minus" then
-        if #AUTH_CONFIG.CurrentInput < 25 then
-            AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. "-"
-            InputDisplay.Text = "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
-        end
-        return
-    end
-
-    if #keyName == 1 and string.find(AllowedChars, keyName) then
-        if #AUTH_CONFIG.CurrentInput < 25 then
-            AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. keyName
-            InputDisplay.Text = "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
-        end
-    elseif keyCode.Value >= Enum.KeyCode.Zero.Value and keyCode.Value <= Enum.KeyCode.Nine.Value then
-        local digit = tostring(keyCode.Value - Enum.KeyCode.Zero.Value)
-        if #AUTH_CONFIG.CurrentInput < 25 then
-            AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. digit
-            InputDisplay.Text = "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
-        end
-
-elseif keyCode == Enum.KeyCode.Backspace then
+InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+end
+return
+end
+end
+-- Стандартный ввод символов
+if input.KeyCode == Enum.KeyCode.Backspace then
 if #AUTH_CONFIG.CurrentInput > 0 then
-AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput:sub(1, -2)
-InputDisplay.Text = #AUTH_CONFIG.CurrentInput == 0 and "Enter License Key: " or "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
+AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
+InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+end
+elseif input.KeyCode == Enum.KeyCode.Space then
+-- Пропускаем пробелы для ключей лицензии
+else
+-- Преобразование KeyCode в читаемый символ через String (базовый вариант для букв/цифр)
+local keyChar = input.KeyCode.Name
+if #keyChar == 1 then
+-- Проверка на Shift для регистра
+local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
+if not isShift then
+keyChar = string.lower(keyChar)
+end
+AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. keyChar
+InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+elseif string.sub(keyChar, 1, 6) == "Number" and #keyChar == 7 then
+-- Ловим цифры (Number0, Number1 и т.д.)
+local num = string.sub(keyChar, 7, 7)
+AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. num
+InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
 end
 end
 end)
-local blockKeys = {}
-for _, enumItem in pairs(Enum.KeyCode:GetEnumItems()) do
-if enumItem ~= Enum.KeyCode.Escape then table.insert(blockKeys, enumItem) end
+UserInputService.InputChanged:Connect(function(input)
+if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+updateMenuPosition(startOffset + (getRealMouseLocation() - dragStart))
 end
-ContextActionService:BindCoreAction("BlockGameInput", function()
-if AUTH_CONFIG.MenuVisible then return Enum.ContextActionResult.Sink end
-return Enum.ContextActionResult.Pass end, false, unpack(blockKeys))
--- Прямой вызов для отлова ошибок компиляции Potassium
+end)
+UserInputService.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = false
+end
+end)
+-- Старт
 initAuthMenu()
+
 
 
 
