@@ -1,12 +1,11 @@
 -- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER
--- ========================================================
-
--- ========================================================
-local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
+
+
+local BASE_API_URL = "https://server-ca9b.onrender.com"
 
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
@@ -19,29 +18,6 @@ local executor_request = (syn and syn.request)
     or http_request 
     or (http and http.request) 
     or (fluxus and fluxus.request)
-
-local _t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-
-local function _dX(d)
-    d = string.gsub(d, "[^" .. _t .. "=]", "")
-    return (d:gsub(".", function(x)
-        if x == "=" then return "" end
-        local c = _t:find(x) - 1
-        local r = ""
-        for i = 6, 1, -1 do
-            r = r .. (c % 2 ^ i - c % 2 ^ (i - 1) > 0 and "1" or "0")
-        end
-        return r
-    end):gsub("%d%d%d%d%d%d%d%d", function(x)
-        local c = 0
-        for i = 1, 8 do
-            c = c + (x:sub(i, i) == "1" and 2 ^ (8 - i) or 0)
-        end
-        return string.char(c)
-    end))
-end
-
-local BASE_API_URL = _dX(_vX)
 
 local function getClientHWID()
     local success, result = pcall(function()
@@ -161,7 +137,7 @@ local dragStart = nil
 local startOffset = nil
 local capsLockState = false
 
--- ФУНКЦИЯ ПРОВЕРКИ КЛЮЧА С ДЕТАЛЬНЫМ СТАТУСОМ
+-- ФУНКЦИЯ ПРОВЕРКИ КЛЮЧА
 local function checkLicenseKey()
     if #AUTH_CONFIG.CurrentInput == 0 then
         StatusText.Color = Color3.fromRGB(255, 150, 0)
@@ -175,7 +151,6 @@ local function checkLicenseKey()
         return
     end
 
-    -- СТАДИЯ 1: Будим сервер
     StatusText.Color = Color3.fromRGB(255, 180, 0)
     StatusText.Text = "⏳ CONNECTING... WAKING UP SERVER (PLEASE WAIT 15-40s)"
     task.wait(0.5)
@@ -194,7 +169,6 @@ local function checkLicenseKey()
         .. "&cb="
         .. cacheBuster
 
-    -- СТАДИЯ 2: Отправка данных
     StatusText.Color = Color3.fromRGB(255, 220, 0)
     StatusText.Text = "📡 SENDING REQUEST... VERIFYING HWID AND LICENSE KEY"
 
@@ -202,11 +176,10 @@ local function checkLicenseKey()
         return executor_request({
             Url = targetUrl, 
             Method = "GET",
-            Timeout = 60 -- Даем серверу целую минуту, чтобы проснуться и ответить!
+            Timeout = 60
         })
     end)
 
-    -- СТАДИЯ 3: Разбор ответа
     if success and response then
         if response.StatusCode == 200 then
             StatusText.Color = Color3.fromRGB(0, 255, 0)
@@ -222,9 +195,8 @@ local function checkLicenseKey()
             StatusText.Text = "❌ AUTH FAILED! INVALID KEY OR HWID MISMATCH (CODE: " .. tostring(response.StatusCode) .. ")"
         end
     else
-        -- Если сервак вообще не ответил за минуту
         StatusText.Color = Color3.fromRGB(255, 100, 50)
-        StatusText.Text = "⚠️ SERVER TIMEOUT! STILL SLEEPING. TRY AGAIN IN 10 SECONDS."
+        StatusText.Text = "⚠️ SERVER TIMEOUT (CODE: 0)! STILL SLEEPING. TRY AGAIN IN A MOMENT."
     end
 end
 
