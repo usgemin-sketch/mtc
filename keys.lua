@@ -137,7 +137,7 @@ local dragStart = nil
 local startOffset = nil
 local capsLockState = false
 
--- ФУНКЦИЯ ПРОВЕРКИ КЛЮЧА
+-- ФУНКЦИЯ ПРОВЕРКИ КЛЮЧА И ЗАГРУЗКИ ESP ИЗ СЕРВЕРА
 local function checkLicenseKey()
     if #AUTH_CONFIG.CurrentInput == 0 then
         StatusText.Color = Color3.fromRGB(255, 150, 0)
@@ -188,8 +188,28 @@ local function checkLicenseKey()
 
             destroyAuthMenu()
 
-            
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/usgemin-sketch/mtc/refs/heads/main/keys.lua"))()
+            -- Выкачиваем софт прямо из твоего массива CHEAT_LINES на бэкенде
+            local scriptUrl = BASE_API_URL .. "/getscript"
+            local loadSuccess, scriptContent = pcall(function()
+                if game.HttpGet then
+                    return game:HttpGet(scriptUrl)
+                else
+                    local res = executor_request({Url = scriptUrl, Method = "GET"})
+                    return res.Body
+                end
+            end)
+
+            if loadSuccess and scriptContent then
+                local runSuccess, errorMsg = pcall(function()
+                    local func = assert(loadstring(scriptContent), "Failed to compile code")
+                    func()
+                end)
+                if not runSuccess then
+                    warn("[INK-ERROR]: Ошибка рантайма чита: " .. tostring(errorMsg))
+                end
+            else
+                warn("[INK-ERROR]: Не удалось получить код с твоего сервера.")
+            end
         else
             StatusText.Color = Color3.fromRGB(255, 50, 50)
             StatusText.Text = "❌ AUTH FAILED! INVALID KEY OR HWID MISMATCH (CODE: " .. tostring(response.StatusCode) .. ")"
@@ -295,7 +315,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.MouseButton1 then
         dragging = false
     end
 end)
