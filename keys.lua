@@ -1,6 +1,6 @@
 -- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER
 -- ========================================================
--- 1. ТВОЙ СЕРВЕР / АПИ ТУТ (Зашит Base64 от onrender.com)
+
 -- ========================================================
 local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
 
@@ -204,10 +204,9 @@ local function checkLicenseKey()
         destroyAuthMenu()
 
         -- ========================================================
-        -- 2. ТВОЙ ЛОАДСТРИНГ С ГИТХАБА:
-        -- Скачивает и исполняет твой основной софт
+        
         -- ========================================================
-        loadstring(game:HttpGet("https://githubusercontent.com"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/usgemin-sketch/mtc/refs/heads/main/keys.lua"))()
     else
         StatusText.Color = Color3.fromRGB(255, 50, 50)
         StatusText.Text = "AUTH FAILED! Invalid Key or HWID Mismatch."
