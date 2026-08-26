@@ -161,22 +161,24 @@ local dragStart = nil
 local startOffset = nil
 local capsLockState = false
 
--- ФУНКЦИЯ ПРОВЕРКИ КЛЮЧА И ЗАПУСКА ЧИТА
+-- ФУНКЦИЯ ПРОВЕРКИ КЛЮЧА С ДЕТАЛЬНЫМ СТАТУСОМ
 local function checkLicenseKey()
     if #AUTH_CONFIG.CurrentInput == 0 then
         StatusText.Color = Color3.fromRGB(255, 150, 0)
-        StatusText.Text = "Please enter a license key first!"
+        StatusText.Text = "🚨 PLEASE ENTER A LICENSE KEY FIRST!"
         return
     end
 
     if not executor_request then
         StatusText.Color = Color3.fromRGB(255, 50, 50)
-        StatusText.Text = "CRITICAL ERROR: Executor missing HTTP Request support!"
+        StatusText.Text = "❌ CRITICAL ERROR: EXECUTOR MISSING HTTP SUPPORT!"
         return
     end
 
-    StatusText.Color = Color3.fromRGB(0, 255, 180)
-    StatusText.Text = "Verifying cloud license..."
+    -- СТАДИЯ 1: Будим сервер
+    StatusText.Color = Color3.fromRGB(255, 180, 0)
+    StatusText.Text = "⏳ CONNECTING... WAKING UP SERVER (PLEASE WAIT 15-40s)"
+    task.wait(0.5)
 
     local hwid = getClientHWID()
     local rblxName = Players.LocalPlayer and Players.LocalPlayer.Name or "Unknown"
@@ -192,43 +194,53 @@ local function checkLicenseKey()
         .. "&cb="
         .. cacheBuster
 
+    -- СТАДИЯ 2: Отправка данных
+    StatusText.Color = Color3.fromRGB(255, 220, 0)
+    StatusText.Text = "📡 SENDING REQUEST... VERIFYING HWID AND LICENSE KEY"
+
     local success, response = pcall(function()
-        return executor_request({Url = targetUrl, Method = "GET"})
+        return executor_request({
+            Url = targetUrl, 
+            Method = "GET",
+            Timeout = 60 -- Даем серверу целую минуту, чтобы проснуться и ответить!
+        })
     end)
 
-    if success and response and response.StatusCode == 200 then
-        StatusText.Color = Color3.fromRGB(0, 255, 0)
-        StatusText.Text = "SUCCESS! Loading premium software..."
-        task.wait(1)
+    -- СТАДИЯ 3: Разбор ответа
+    if success and response then
+        if response.StatusCode == 200 then
+            StatusText.Color = Color3.fromRGB(0, 255, 0)
+            StatusText.Text = "✅ SUCCESS! KEY APPROVED. DOWNLOADING PREMIUM SOFTWARE..."
+            task.wait(1.5)
 
-        destroyAuthMenu()
+            destroyAuthMenu()
 
-        -- ========================================================
-        
-        -- ========================================================
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/usgemin-sketch/mtc/refs/heads/main/keys.lua"))()
+            
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/usgemin-sketch/mtc/refs/heads/main/keys.lua"))()
+        else
+            StatusText.Color = Color3.fromRGB(255, 50, 50)
+            StatusText.Text = "❌ AUTH FAILED! INVALID KEY OR HWID MISMATCH (CODE: " .. tostring(response.StatusCode) .. ")"
+        end
     else
-        StatusText.Color = Color3.fromRGB(255, 50, 50)
-        StatusText.Text = "AUTH FAILED! Invalid Key or HWID Mismatch."
+        -- Если сервак вообще не ответил за минуту
+        StatusText.Color = Color3.fromRGB(255, 100, 50)
+        StatusText.Text = "⚠️ SERVER TIMEOUT! STILL SLEEPING. TRY AGAIN IN 10 SECONDS."
     end
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not AUTH_CONFIG.MenuVisible then return end
 
-    -- 1. ОТСЛЕЖИВАНИЕ ТРИГГЕРА CAPS LOCK
     if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.CapsLock then
         capsLockState = not capsLockState
         return
     end
 
-    -- 2. ОБРАБОТКА МЫШИ (КЛИКИ И ПЕРЕТАСКИВАНИЕ)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mousePos = getRealMouseLocation()
         local menuPos = MenuBackground.Position
         local btnPos = ActivateButton.Position
 
-        -- Первым делом проверяем попадание по кнопке активации
         if mousePos.X >= btnPos.X
             and mousePos.X <= btnPos.X + 180
             and mousePos.Y >= btnPos.Y
@@ -242,7 +254,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             return
         end
 
-        -- Перетаскивание за шапку (теперь не перебивает кнопку)
         if mousePos.X >= menuPos.X
             and mousePos.X <= menuPos.X + AUTH_CONFIG.Width
             and mousePos.Y >= menuPos.Y
@@ -255,17 +266,14 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
 
-    -- 3. ОБРАБОТКА КЛАВИАТУРЫ
     if input.UserInputType == Enum.UserInputType.Keyboard then
         local isCtrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
         
-        -- СРАБАТЫВАНИЕ ПО НАЖАТИЮ НА ENTER (RETURN)
         if input.KeyCode == Enum.KeyCode.Return then
             checkLicenseKey()
             return
         end
 
-        -- Горячая вставка CTRL+V
         if isCtrl and input.KeyCode == Enum.KeyCode.V then
             local clipboard = (setclipboard and getclipboard and getclipboard()) or ""
             if type(clipboard) == "string" and #clipboard > 0 then
@@ -275,14 +283,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             return
         end
 
-        -- Стирание символов (Backspace)
         if input.KeyCode == Enum.KeyCode.Backspace then
             AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
             InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
             return
         end
 
-        -- Фильтруем служебные кнопки, чтобы мусор не писался в поле ключа
         if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Enum.KeyCode.LeftShift and input.KeyCode ~= Enum.KeyCode.RightShift and input.KeyCode ~= Enum.KeyCode.LeftControl and input.KeyCode ~= Enum.KeyCode.RightControl and input.KeyCode ~= Enum.KeyCode.CapsLock and input.KeyCode ~= Enum.KeyCode.Return then
             
             local success, rawChar = pcall(function()
