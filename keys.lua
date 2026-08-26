@@ -1,16 +1,9 @@
-local RAW_SERVER_URL = "https://server-ca9b.onrender.com"
 
+
+local RAW_SERVER_URL = "https://onrender.com"
 if not game:IsLoaded() then game.Loaded:Wait() end
-
-local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-local ContextActionService = game:GetService("ContextActionService")
-local Camera = workspace.CurrentCamera
-local Players = game:GetService("Players")
-local request = syn and syn.request or http_request or request
-
-local b64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-local function encodeBase64(data)
+local HttpService = game:GetService("HttpService")local UserInputService = game:GetService("UserInputService")local ContextActionService = game:GetService("ContextActionService")local Camera = workspace.CurrentCameralocal Players = game:GetService("Players")local request = syn and syn.request or http_request or request
+local b64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'local function encodeBase64(data)
     return ((data:gsub('.', function(x) 
         local r,b='',x:byte()
         for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
@@ -20,9 +13,7 @@ local function encodeBase64(data)
         local c=0
         for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
         return b64_chars:sub(c+1,c+1)
-    end)..({ '', '==', '=' })[#data%3+1])
-end
-
+    end)..({ '', '==', '=' })[#data%3+1])end
 local function decodeBase64(data)
     data = string.gsub(data, '[^'..b64_chars..'=]', '')
     return (data:gsub('.', function(x)
@@ -35,36 +26,21 @@ local function decodeBase64(data)
         local c=0
         for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
         return string.char(c)
-    end))
-end
-
-local OBFUSCATED_BASE64_URL = encodeBase64(RAW_SERVER_URL)
-local BASE_API_URL = decodeBase64(OBFUSCATED_BASE64_URL)
-
+    end))end
+local OBFUSCATED_BASE64_URL = encodeBase64(RAW_SERVER_URL)local BASE_API_URL = decodeBase64(OBFUSCATED_BASE64_URL)
 local function getClientHWID()
     local success, result = pcall(function() 
         return game:GetService("RbxAnalyticsService"):GetClientId() or (gethwid and gethwid()) or "FAIL_HWID" 
     end)
-    return success and result or "FAIL_HWID"
-end
-
+    return success and result or "FAIL_HWID"end
 local AUTH_CONFIG = {
     Width = 480,
     Height = 260,
     MenuVisible = true,
     CurrentInput = ""
 }
-
 local startPos = Vector2.new((Camera.ViewportSize.X / 2) - (AUTH_CONFIG.Width / 2), (Camera.ViewportSize.Y / 2) - (AUTH_CONFIG.Height / 2))
-
-local MenuBackground = Drawing.new("Square")
-local MenuHeader = Drawing.new("Square")
-local MenuTitle = Drawing.new("Text")
-local InputDisplay = Drawing.new("Text")
-local ActivateButton = Drawing.new("Square")
-local ButtonText = Drawing.new("Text")
-local StatusText = Drawing.new("Text")
-
+local MenuBackground = Drawing.new("Square")local MenuHeader = Drawing.new("Square")local MenuTitle = Drawing.new("Text")local InputDisplay = Drawing.new("Text")local ActivateButton = Drawing.new("Square")local ButtonText = Drawing.new("Text")local StatusText = Drawing.new("Text")
 local function initAuthMenu()
     MenuBackground.Size = Vector2.new(AUTH_CONFIG.Width, AUTH_CONFIG.Height)
     MenuBackground.Position = startPos
@@ -106,24 +82,18 @@ local function initAuthMenu()
     StatusText.Size = 13; StatusText.Color = Color3.fromRGB(110, 110, 110)
     StatusText.Center = true; StatusText.Outline = true
     StatusText.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
-    StatusText.Visible = true
-end
-
+    StatusText.Visible = trueend
 local function updateMenuPosition(newPos)
     MenuBackground.Position = newPos; MenuHeader.Position = newPos
     MenuTitle.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
     InputDisplay.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
     ActivateButton.Position = newPos + Vector2.new((AUTH_CONFIG.Width / 2) - 90, 145)
     ButtonText.Position = ActivateButton.Position + Vector2.new(90, 11)
-    StatusText.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
-end
-
+    StatusText.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)end
 local function destroyAuthMenu()
     MenuBackground:Remove(); MenuHeader:Remove(); MenuTitle:Remove()
     InputDisplay:Remove(); ActivateButton:Remove(); ButtonText:Remove(); StatusText:Remove()
-    ContextActionService:UnbindCoreAction("BlockGameInput")
-end
-
+    ContextActionService:UnbindCoreAction("BlockGameInput")end
 local dragging, dragStart, startOffset = false, nil, nil
 
 UserInputService.InputBegan:Connect(function(input)
@@ -182,16 +152,13 @@ UserInputService.InputBegan:Connect(function(input)
                 StatusText.Text = "Please enter a license key first!"
             end
         end
-    end
-end)
+    endend)
 
 UserInputService.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         updateMenuPosition(startOffset + (UserInputService:GetMouseLocation() - dragStart))
-    end
-end)
+    endend)
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-
 local AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
 UserInputService.InputBegan:Connect(function(input)
     if not AUTH_CONFIG.MenuVisible then return end
@@ -218,4 +185,29 @@ UserInputService.InputBegan:Connect(function(input)
     if #keyName == 1 and string.find(AllowedChars, keyName) then
         if #AUTH_CONFIG.CurrentInput < 25 then
             AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. keyName
-InputDisplay.Text = "Enter License Key: " .. string.rep("", #AUTH_CONFIG.CurrentInput)endelseif keyCode.Value >= Enum.KeyCode.Zero.Value and keyCode.Value <= Enum.KeyCode.Nine.Value thenlocal digit = tostring(keyCode.Value - Enum.KeyCode.Zero.Value)if #AUTH_CONFIG.CurrentInput < 25 thenAUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. digitInputDisplay.Text = "Enter License Key: " .. string.rep("", #AUTH_CONFIG.CurrentInput)endelseif keyCode == Enum.KeyCode.Backspace thenif #AUTH_CONFIG.CurrentInput > 0 thenAUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput:sub(1, -2)InputDisplay.Text = #AUTH_CONFIG.CurrentInput == 0 and "Enter License Key: " or "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)endendend)local blockKeys = {}for _, enumItem in pairs(Enum.KeyCode:GetEnumItems()) doif enumItem ~= Enum.KeyCode.Escape then table.insert(blockKeys, enumItem) endendContextActionService:BindCoreAction("BlockGameInput", function()if AUTH_CONFIG.MenuVisible then return Enum.ContextActionResult.Sink endreturn Enum.ContextActionResult.Pass end, false, unpack(blockKeys))initAuthMenu()
+
+InputDisplay.Text = "Enter License Key: " .. string.rep("", #AUTH_CONFIG.CurrentInput)
+end
+elseif keyCode.Value >= Enum.KeyCode.Zero.Value and keyCode.Value <= Enum.KeyCode.Nine.Value then
+local digit = tostring(keyCode.Value - Enum.KeyCode.Zero.Value)
+if #AUTH_CONFIG.CurrentInput < 25 then
+AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. digit
+InputDisplay.Text = "Enter License Key: " .. string.rep("", #AUTH_CONFIG.CurrentInput)
+end
+elseif keyCode == Enum.KeyCode.Backspace then
+if #AUTH_CONFIG.CurrentInput > 0 then
+AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput:sub(1, -2)
+InputDisplay.Text = #AUTH_CONFIG.CurrentInput == 0 and "Enter License Key: " or "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
+end
+end
+end)
+local blockKeys = {}
+for _, enumItem in pairs(Enum.KeyCode:GetEnumItems()) do
+if enumItem ~= Enum.KeyCode.Escape then table.insert(blockKeys, enumItem) end
+end
+ContextActionService:BindCoreAction("BlockGameInput", function()
+if AUTH_CONFIG.MenuVisible then return Enum.ContextActionResult.Sink end
+return Enum.ContextActionResult.Pass end, false, unpack(blockKeys))
+initAuthMenu()
+
+
