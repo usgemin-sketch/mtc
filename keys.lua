@@ -1,6 +1,6 @@
 -- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER
 -- ========================================================
--- 1. ТВОЙ СЕРВЕР / АПИ ТУТ (Зашит Base64 от onrender.com)
+
 -- ========================================================
 local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
 
