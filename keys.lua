@@ -232,10 +232,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 .. cacheBuster
 
             local success, response = pcall(function()
-                return request({
-                    Url = targetUrl,
-                    Method = "GET"
-                })
+                return request({Url = targetUrl, Method = "GET"})
             end)
 
             if success and response and response.StatusCode == 200 then
@@ -250,7 +247,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                     if game.HttpGet then
                         return game:HttpGet(scriptUrl)
                     else
-                        local res = request({ Url = scriptUrl, Method = "GET" })
+                        local res = request({Url = scriptUrl, Method = "GET"})
                         return res.Body
                     end
                 end)
@@ -260,12 +257,11 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                         local func = assert(loadstring(scriptContent), "Failed to compile main script")
                         func()
                     end)
-
                     if not runSuccess then
-                        warn("[INK-ERROR]: Ошибка рантайма основного скрипта: " .. tostring(errorMsg))
+                        warn("[INK-ERROR]: Ошибка рантайма скрипта: " .. tostring(errorMsg))
                     end
                 else
-                    warn("[INK-ERROR]: Критическая ошибка: Не удалось скачать файл с GitHub.")
+                    warn("[INK-ERROR]: Не удалось скачать файл с GitHub.")
                 end
             else
                 StatusText.Color = Color3.fromRGB(255, 50, 50)
@@ -275,25 +271,34 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 
     if input.UserInputType == Enum.UserInputType.Keyboard then
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
-            if input.KeyCode == Enum.KeyCode.V then
-                local clipboard = setclipboard and getclipboard and getclipboard() or ""
-                if #clipboard > 0 then
-                    AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. clipboard
-                    InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
-                end
-                return
+        local isCtrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
+        
+        if isCtrl and input.KeyCode == Enum.KeyCode.V then
+            local clipboard = (setclipboard and getclipboard and getclipboard()) or ""
+            if type(clipboard) == "string" and #clipboard > 0 then
+                AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. clipboard
+                InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
             end
+            return
         end
 
         if input.KeyCode == Enum.KeyCode.Backspace then
             AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
             InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
-        elseif input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value >= 32 and input.KeyCode.Value <= 126 then
+            return
+        end
+
+        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value >= 32 and input.KeyCode.Value <= 126 then
             local character = string.char(input.KeyCode.Value)
-            if not (UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)) then
+            local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
+            local isCaps = UserInputService:IsKeyDown(Enum.KeyCode.CapsLock)
+
+            if (isShift and not isCaps) or (isCaps and not isShift) then
+                character = string.upper(character)
+            else
                 character = string.lower(character)
             end
+
             AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. character
             InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
         end
