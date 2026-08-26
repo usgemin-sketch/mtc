@@ -1,8 +1,4 @@
--- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER
--- ========================================================
--- 1. УКАЖИ СВОЙ САЙТ / ДОМЕН ТУТ (Вместо этой Base64 строки, если надо)
--- По умолчанию тут зашит твой сервер на onrender.com
--- ========================================================
+
 local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
 
 if not game:IsLoaded() then
@@ -234,12 +230,8 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 
                 destroyAuthMenu()
 
-                -- ========================================================
-                -- 2. СЮДА КИДАЙ СВОЙ ЛОАДСТРИНГ:
-                -- Удаляй нижнюю строку-пример и ставь свой вызов.
-                -- Пример: loadstring(game:HttpGet("твоя_прямая_ссылка_на_чит"))()
-                -- ========================================================
-                loadstring(game:HttpGet("https://githubusercontent.com"))()
+                
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/usgemin-sketch/mtc/refs/heads/main/keys.lua"))()
 
             else
                 StatusText.Color = Color3.fromRGB(255, 50, 50)
