@@ -7,7 +7,6 @@ end
 
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
-local ContextActionService = game:GetService("ContextActionService")
 local GuiService = game:GetService("GuiService")
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
@@ -161,22 +160,15 @@ local function destroyAuthMenu()
     ActivateButton:Remove()
     ButtonText:Remove()
     StatusText:Remove()
-    ContextActionService:UnbindCoreAction("BlockGameInput")
 end
 
 local dragging = false
 local dragStart = nil
 local startOffset = nil
-
-ContextActionService:BindCoreAction("BlockGameInput", function()
-    if AUTH_CONFIG.MenuVisible then
-        return Enum.ContextActionResult.Sink
-    end
-    return Enum.ContextActionResult.Pass
-end, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.Keyboard)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not AUTH_CONFIG.MenuVisible then return end
 
+    -- МЫШКА (КЛИКИ И КНОПКА АКТИВАЦИИ)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mousePos = getRealMouseLocation()
         local menuPos = MenuBackground.Position
@@ -270,9 +262,11 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
 
+    -- КЛАВИАТУРА БЕЗ ДИКИХ СБЛОКИРОВОК СИСТЕМЫ
     if input.UserInputType == Enum.UserInputType.Keyboard then
         local isCtrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
         
+        -- Полноценный рабочий CTRL+V
         if isCtrl and input.KeyCode == Enum.KeyCode.V then
             local clipboard = (setclipboard and getclipboard and getclipboard()) or ""
             if type(clipboard) == "string" and #clipboard > 0 then
@@ -282,21 +276,38 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             return
         end
 
+        -- Стирание
         if input.KeyCode == Enum.KeyCode.Backspace then
             AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
             InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
             return
         end
 
-        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value >= 32 and input.KeyCode.Value <= 126 then
-            local character = string.char(input.KeyCode.Value)
-            local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
-            local isCaps = UserInputService:IsKeyDown(Enum.KeyCode.CapsLock)
+        -- Ввод букв (чекаем реальный сдвиг по строкам символов)
+        local shiftKeys = {
+            ["1"]="!", ["2"]="@", ["3"]="#", ["4"]="$", ["5"]="%", 
+            ["6"]="^", ["7"]="&", ["8"] fire="*", ["9"]="(", ["0"]=")",
+            ["-"]="_", ["="]="+", ["["]="{", ["]"]="}", [";"]=":", 
+            ["'"]="\"", [","]="<", ["."]=">", ["/"]="?"
+        }
 
-            if (isShift and not isCaps) or (isCaps and not isShift) then
-                character = string.upper(character)
-            else
-                character = string.lower(character)
+        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value >= 32 and input.KeyCode.Value <= 126 then
+            local rawChar = string.char(input.KeyCode.Value)
+            local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
+            local isCaps = UserInputService:IsKeyToggled(Enum.KeyCode.CapsLock) -- Юзаем состояние триггера!
+
+            local character = rawChar
+            
+            -- Если это буква — применяем XOR Капса и Шифта
+            if string.match(rawChar, "%a") then
+                if (isShift and not isCaps) or (isCaps and not isShift) then
+                    character = string.upper(rawChar)
+                else
+                    character = string.lower(rawChar)
+                end
+            -- Если спецсимвол — меняем по таблице Шифта
+            elseif isShift and shiftKeys[rawChar] then
+                character = shiftKeys[rawChar]
             end
 
             AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. character
