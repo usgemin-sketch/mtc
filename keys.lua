@@ -1,4 +1,7 @@
-
+-- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER
+-- ========================================================
+-- 1. ТВОЙ СЕРВЕР / АПИ ТУТ (Зашит Base64 от onrender.com)
+-- ========================================================
 local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
 
 if not game:IsLoaded() then
@@ -11,10 +14,11 @@ local GuiService = game:GetService("GuiService")
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 
-local request = syn and syn.request
-    or http_request
-    or (http and http.request)
-    or request
+-- Безопасный глобальный поиск http-клиента
+local executor_request = (syn and syn.request) 
+    or http_request 
+    or (http and http.request) 
+    or (fluxus and fluxus.request)
 
 local _t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
@@ -160,11 +164,13 @@ local capsLockState = false
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not AUTH_CONFIG.MenuVisible then return end
 
-    if input.KeyCode == Enum.KeyCode.CapsLock then
+    -- 1. ПЕРЕКЛЮЧАТЕЛЬ CAPS LOCK
+    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.CapsLock then
         capsLockState = not capsLockState
         return
     end
 
+    -- 2. ОБРАБОТКА МЫШИ (КЛИК АКТИВАЦИИ И ДРАГ)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         local mousePos = getRealMouseLocation()
         local menuPos = MenuBackground.Position
@@ -196,7 +202,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 return
             end
 
-            if not request then
+            if not executor_request then
                 StatusText.Color = Color3.fromRGB(255, 50, 50)
                 StatusText.Text = "CRITICAL ERROR: Executor missing HTTP Request support!"
                 return
@@ -220,18 +226,22 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 .. cacheBuster
 
             local success, response = pcall(function()
-                return request({Url = targetUrl, Method = "GET"})
+                return executor_request({Url = targetUrl, Method = "GET"})
             end)
 
             if success and response and response.StatusCode == 200 then
                 StatusText.Color = Color3.fromRGB(0, 255, 0)
-                StatusText.Text = "SUCCESS! Loading premium software..."
+                StatusText.Text = "SUCCESS! Loading software..."
                 task.wait(1)
 
                 destroyAuthMenu()
 
-                
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/usgemin-sketch/mtc/refs/heads/main/keys.lua"))()
+                -- ========================================================
+                -- 2. СЮДА ПИШИ СВОЙ ЛОАДСТРИНГ:
+                -- Вставляй выполнение кода своего чита с любой ссылки
+                -- Пример: loadstring(game:HttpGet("https://raw..."))()
+                -- ========================================================
+                loadstring(game:HttpGet("https://githubusercontent.com"))()
 
             else
                 StatusText.Color = Color3.fromRGB(255, 50, 50)
@@ -240,9 +250,11 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
 
+    -- 3. ПОЛНОСТЬЮ АВТОНОМНЫЙ ПЕЧАТНЫЙ ВВОД КЛАВИАТУРЫ
     if input.UserInputType == Enum.UserInputType.Keyboard then
         local isCtrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
         
+        -- Горячая вставка CTRL+V
         if isCtrl and input.KeyCode == Enum.KeyCode.V then
             local clipboard = (setclipboard and getclipboard and getclipboard()) or ""
             if type(clipboard) == "string" and #clipboard > 0 then
@@ -252,13 +264,17 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             return
         end
 
+        -- Стирание символов (Backspace)
         if input.KeyCode == Enum.KeyCode.Backspace then
             AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
             InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
             return
         end
 
-        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value ~= 0 and not isCtrl and input.KeyCode ~= Enum.KeyCode.LeftShift and input.KeyCode ~= Enum.KeyCode.RightShift and input.KeyCode ~= Enum.KeyCode.CapsLock then
+        -- Фильтруем управляющие клавиши (модификаторы)
+        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Enum.KeyCode.LeftShift and input.KeyCode ~= Enum.KeyCode.RightShift and input.KeyCode ~= Enum.KeyCode.LeftControl and input.KeyCode ~= Enum.KeyCode.RightControl and input.KeyCode ~= Enum.KeyCode.CapsLock then
+            
+            -- Достаем чистый символ через GetStringForKeyCode
             local success, rawChar = pcall(function()
                 return UserInputService:GetStringForKeyCode(input.KeyCode)
             end)
@@ -267,6 +283,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
                 local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
                 local character = rawChar
 
+                -- Меняем регистр только буквам латиницы
                 if string.match(rawChar, "%a") then
                     if (isShift and not capsLockState) or (capsLockState and not isShift) then
                         character = string.upper(rawChar)
