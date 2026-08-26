@@ -1,23 +1,13 @@
+
 local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
-
 if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
-
-local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-local ContextActionService = game:GetService("ContextActionService")
-local GuiService = game:GetService("GuiService")
-local Camera = workspace.CurrentCamera
-local Players = game:GetService("Players")
-
+    game.Loaded:Wait()end
+local HttpService = game:GetService("HttpService")local UserInputService = game:GetService("UserInputService")local ContextActionService = game:GetService("ContextActionService")local GuiService = game:GetService("GuiService")local Camera = workspace.CurrentCameralocal Players = game:GetService("Players")
 local request = syn and syn.request
     or http_request
     or (http and http.request)
     or request
-
 local _t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-
 local function _dX(d)
     d = string.gsub(d, "[^" .. _t .. "=]", "")
 
@@ -42,11 +32,8 @@ local function _dX(d)
         end
 
         return string.char(c)
-    end))
-end
-
+    end))end
 local BASE_API_URL = _dX(_vX)
-
 local function getClientHWID()
     local success, result = pcall(function()
         return (gethwid and gethwid())
@@ -54,36 +41,23 @@ local function getClientHWID()
             or "FAIL_HWID"
     end)
 
-    return success and result or "FAIL_HWID"
-end
-
+    return success and result or "FAIL_HWID"end
 local AUTH_CONFIG = {
     Width = 480,
     Height = 260,
     MenuVisible = true,
     CurrentInput = ""
 }
-
 local function getRealMouseLocation()
     local mousePos = UserInputService:GetMouseLocation()
     local inset = GuiService:GetGuiInset()
 
-    return Vector2.new(mousePos.X, mousePos.Y - inset.Y)
-end
-
+    return Vector2.new(mousePos.X, mousePos.Y - inset.Y)end
 local startPos = Vector2.new(
     (Camera.ViewportSize.X / 2) - (AUTH_CONFIG.Width / 2),
     (Camera.ViewportSize.Y / 2) - (AUTH_CONFIG.Height / 2)
 )
-
-local MenuBackground = Drawing.new("Square")
-local MenuHeader = Drawing.new("Square")
-local MenuTitle = Drawing.new("Text")
-local InputDisplay = Drawing.new("Text")
-local ActivateButton = Drawing.new("Square")
-local ButtonText = Drawing.new("Text")
-local StatusText = Drawing.new("Text")
-
+local MenuBackground = Drawing.new("Square")local MenuHeader = Drawing.new("Square")local MenuTitle = Drawing.new("Text")local InputDisplay = Drawing.new("Text")local ActivateButton = Drawing.new("Square")local ButtonText = Drawing.new("Text")local StatusText = Drawing.new("Text")
 local function initAuthMenu()
     MenuBackground.Size = Vector2.new(AUTH_CONFIG.Width, AUTH_CONFIG.Height)
     MenuBackground.Position = startPos
@@ -101,22 +75,17 @@ local function initAuthMenu()
     MenuTitle.Color = Color3.fromRGB(255, 0, 120)
     MenuTitle.Center = true
     MenuTitle.Outline = true
-    MenuTitle.Position =
-        startPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
+    MenuTitle.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
 
     InputDisplay.Text = "Enter License Key: "
     InputDisplay.Size = 18
     InputDisplay.Color = Color3.fromRGB(255, 255, 255)
     InputDisplay.Center = true
     InputDisplay.Outline = true
-    InputDisplay.Position =
-        startPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
+    InputDisplay.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
 
     ActivateButton.Size = Vector2.new(180, 40)
-    ActivateButton.Position = startPos + Vector2.new(
-        (AUTH_CONFIG.Width / 2) - 90,
-        145
-    )
+    ActivateButton.Position = startPos + Vector2.new((AUTH_CONFIG.Width / 2) - 90, 145)
     ActivateButton.Color = Color3.fromRGB(32, 32, 32)
     ActivateButton.Thickness = 1
     ActivateButton.Filled = true
@@ -126,17 +95,14 @@ local function initAuthMenu()
     ButtonText.Color = Color3.fromRGB(0, 255, 180)
     ButtonText.Center = true
     ButtonText.Outline = true
-    ButtonText.Position =
-        ActivateButton.Position + Vector2.new(90, 11)
+    ButtonText.Position = ActivateButton.Position + Vector2.new(90, 11)
 
-    StatusText.Text =
-        "[ Type license key or press CTRL+V to insert ]"
+    StatusText.Text = "[ Type license key or press CTRL+V to insert ]"
     StatusText.Size = 13
     StatusText.Color = Color3.fromRGB(110, 110, 110)
     StatusText.Center = true
     StatusText.Outline = true
-    StatusText.Position =
-        startPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
+    StatusText.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
 
     MenuBackground.Visible = true
     MenuHeader.Visible = true
@@ -146,32 +112,17 @@ local function initAuthMenu()
     ButtonText.Visible = true
     StatusText.Visible = true
 
-    print("[INK-GUI]: Панель успешно создана и выведена на экран!")
-end
-
+    print("[INK-GUI]: Панель успешно создана и выведена на экран!")end
 local function updateMenuPosition(newPos)
     MenuBackground.Position = newPos
     MenuHeader.Position = newPos
-
-    MenuTitle.Position =
-        newPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
-
-    InputDisplay.Position =
-        newPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
-
-    ActivateButton.Position = newPos + Vector2.new(
-        (AUTH_CONFIG.Width / 2) - 90,
-        145
-    )
-
-    ButtonText.Position =
-        ActivateButton.Position + Vector2.new(90, 11)
-
-    StatusText.Position =
-        newPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
-end
-
+    MenuTitle.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
+    InputDisplay.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
+    ActivateButton.Position = newPos + Vector2.new((AUTH_CONFIG.Width / 2) - 90, 145)
+    ButtonText.Position = ActivateButton.Position + Vector2.new(90, 11)
+    StatusText.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)end
 local function destroyAuthMenu()
+    AUTH_CONFIG.MenuVisible = false
     MenuBackground:Remove()
     MenuHeader:Remove()
     MenuTitle:Remove()
@@ -179,381 +130,166 @@ local function destroyAuthMenu()
     ActivateButton:Remove()
     ButtonText:Remove()
     StatusText:Remove()
-
-    ContextActionService:UnbindCoreAction("BlockGameInput")
-end
-
-local dragging = false
-local dragStart = nil
-local startOffset = nil
-
-UserInputService.InputBegan:Connect(function(input)
-    if not AUTH_CONFIG.MenuVisible then
-        return
+    ContextActionService:UnbindCoreAction("BlockGameInput")end
+local dragging = falselocal dragStart = nillocal startOffset = nil
+-- Блокируем игровой ввод, пока висит наше меню авторизации
+ContextActionService:BindCoreAction("BlockGameInput", function()
+    if AUTH_CONFIG.MenuVisible then
+        return Enum.ContextActionResult.Sink
     end
+    return Enum.ContextActionResult.Passend, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.Keyboard)
 
-    if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-        return
-    end
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not AUTH_CONFIG.MenuVisible then return end
 
-    local mousePos = getRealMouseLocation()
-    local menuPos = MenuBackground.Position
+    -- Обработка кликов мыши (Драг меню и нажатие кнопки активации)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local mousePos = getRealMouseLocation()
+        local menuPos = MenuBackground.Position
 
-    if mousePos.X >= menuPos.X
-        and mousePos.X <= menuPos.X + AUTH_CONFIG.Width
-        and mousePos.Y >= menuPos.Y
-        and mousePos.Y <= menuPos.Y + 45
-    then
-        dragging = true
-        dragStart = mousePos
-        startOffset = menuPos
-        return
-    end
-
-    local btnPos = ActivateButton.Position
-
-    if mousePos.X >= btnPos.X
-        and mousePos.X <= btnPos.X + 180
-        and mousePos.Y >= btnPos.Y
-        and mousePos.Y <= btnPos.Y + 40
-    then
-        ActivateButton.Color =
-            Color3.fromRGB(45, 45, 45)
-
-        task.wait(0.1)
-
-        ActivateButton.Color =
-            Color3.fromRGB(32, 32, 32)
-
-        if #AUTH_CONFIG.CurrentInput == 0 then
-            StatusText.Color =
-                Color3.fromRGB(255, 150, 0)
-
-            StatusText.Text =
-                "Please enter a license key first!"
-
-            return
-        end
-
-        if not request then
-            StatusText.Color =
-                Color3.fromRGB(255, 50, 50)
-
-            StatusText.Text =
-                "CRITICAL ERROR: Executor does not support HTTP Requests!"
-
-            return
-        end
-
-        StatusText.Color =
-            Color3.fromRGB(0, 255, 180)
-
-        StatusText.Text =
-            "Verifying cloud license..."
-
-        local hwid = getClientHWID()
-
-        local rblxName =
-            Players.LocalPlayer
-            and Players.LocalPlayer.Name
-            or "Unknown"
-
-        local cacheBuster =
-            math.random(100000, 999999)
-
-        local targetUrl =
-            BASE_API_URL
-            .. "/verify?key="
-            .. HttpService:UrlEncode(
-                AUTH_CONFIG.CurrentInput
-            )
-            .. "&hwid="
-            .. HttpService:UrlEncode(hwid)
-            .. "&username="
-            .. HttpService:UrlEncode(rblxName)
-            .. "&cb="
-            .. cacheBuster
-
-        local success, response = pcall(function()
-            return request({
-                Url = targetUrl,
-                Method = "GET"
-            })
-        end)
-
-        if not success
-            or not response
-            or response.StatusCode ~= 200
+        -- Проверка клика по шапке для перетаскивания окна
+        if mousePos.X >= menuPos.X
+            and mousePos.X <= menuPos.X + AUTH_CONFIG.Width
+            and mousePos.Y >= menuPos.Y
+            and mousePos.Y <= menuPos.Y + 45
         then
-            StatusText.Color =
-                Color3.fromRGB(255, 50, 50)
-
-            StatusText.Text =
-                "AUTH FAILED! Invalid Key or HWID Mismatch."
-
+            dragging = true
+            dragStart = mousePos
+            startOffset = menuPos
             return
         end
 
-        local parseSuccess, data = pcall(function()
-            local body = response.Body or ""
-
-            body = body:gsub(
-                "^%s*(.-)%s*$",
-                "%1"
-            )
-
-            return HttpService:JSONDecode(body)
-        end)
-
-        if not parseSuccess
-            or not data
-            or data.status ~= "success"
+        -- Проверка клика по кнопке "ACTIVATE KEY"
+        local btnPos = ActivateButton.Position
+        if mousePos.X >= btnPos.X
+            and mousePos.X <= btnPos.X + 180
+            and mousePos.Y >= btnPos.Y
+            and mousePos.Y <= btnPos.Y + 40
         then
-            StatusText.Color =
-                Color3.fromRGB(255, 50, 50)
+            ActivateButton.Color = Color3.fromRGB(45, 45, 45)
+            task.wait(0.1)
+            ActivateButton.Color = Color3.fromRGB(32, 32, 32)
 
-            StatusText.Text =
-                "AUTH FAILED! Invalid Key or HWID Mismatch."
+            if #AUTH_CONFIG.CurrentInput == 0 then
+                StatusText.Color = Color3.fromRGB(255, 150, 0)
+                StatusText.Text = "Please enter a license key first!"
+                return
+            end
 
-            return
-        end
+            if not request then
+                StatusText.Color = Color3.fromRGB(255, 50, 50)
+                StatusText.Text = "CRITICAL ERROR: Executor missing HTTP Request support!"
+                return
+            end
 
-        StatusText.Color =
-            Color3.fromRGB(50, 255, 50)
+            StatusText.Color = Color3.fromRGB(0, 255, 180)
+            StatusText.Text = "Verifying cloud license..."
 
-        StatusText.Text =
-            "ACCESS GRANTED! Requesting script modules..."
+            local hwid = getClientHWID()
+            local rblxName = Players.LocalPlayer and Players.LocalPlayer.Name or "Unknown"
+            local cacheBuster = math.random(100000, 999999)
 
-        task.wait(1)
+            local targetUrl = BASE_API_URL
+                .. "/verify?key="
+                .. HttpService:UrlEncode(AUTH_CONFIG.CurrentInput)
+                .. "&hwid="
+                .. HttpService:UrlEncode(hwid)
+                .. "&username="
+                .. HttpService:UrlEncode(rblxName)
+                .. "&cb="
+                .. cacheBuster
 
-        local scriptUrl =
-            BASE_API_URL
-            .. "/getscript?cb="
-            .. cacheBuster
-
-        local scriptSuccess, scriptResponse =
-            pcall(function()
+            local success, response = pcall(function()
                 return request({
-                    Url = scriptUrl,
+                    Url = targetUrl,
                     Method = "GET"
                 })
             end)
 
-        if not scriptSuccess
-            or not scriptResponse
-            or scriptResponse.StatusCode ~= 200
-        then
-            StatusText.Color =
-                Color3.fromRGB(255, 50, 50)
+            -- Если бэк пропустил ключ (Статус 200)
+            if success and response and response.StatusCode == 200 then
+                StatusText.Color = Color3.fromRGB(0, 255, 0)
+                StatusText.Text = "SUCCESS! Loading premium software..."
+                task.wait(1)
 
-            StatusText.Text =
-                "ERROR: Failed to download script module."
+                -- Закрываем GUI авторизации
+                destroyAuthMenu()
 
-            return
-        end
+                -- Подтягиваем основной чит с гитхаба
+                local scriptUrl = "https://githubusercontent.com"
+                local loadSuccess, scriptContent = pcall(function()
+                    if game.HttpGet then
+                        return game:HttpGet(scriptUrl)
+                    else
+                        local res = request({ Url = scriptUrl, Method = "GET" })
+                        return res.Body
+                    end
+                end)
 
-        AUTH_CONFIG.MenuVisible = false
+                if loadSuccess and scriptContent then
+                    -- Исполняем загруженный код
+                    local runSuccess, errorMsg = pcall(function()
+                        local func = assert(loadstring(scriptContent), "Failed to compile main script")
+                        func()
+                    end)
 
-        destroyAuthMenu()
-
-        local executableCode, compileError =
-            loadstring(scriptResponse.Body)
-
-        if executableCode then
-            local runSuccess, runError =
-                pcall(executableCode)
-
-            if not runSuccess then
-                warn(
-                    "[INK-ERROR]: Ошибка выполнения модуля: "
-                    .. tostring(runError)
-                )
+                    if not runSuccess then
+                        warn("[INK-ERROR]: Ошибка рантайма основного скрипта: " .. tostring(errorMsg))
+                    end
+                else
+                    warn("[INK-ERROR]: Критическая ошибка: Не удалось скачать файл с GitHub.")
+                end
+            else
+                StatusText.Color = Color3.fromRGB(255, 50, 50)
+                StatusText.Text = "AUTH FAILED! Invalid Key or HWID Mismatch."
             end
-        else
-            warn(
-                "[INK-ERROR]: Скрипт-модуль поврежден: "
-                .. tostring(compileError)
-            )
         end
     end
+
+    -- Обработка ручного ввода ключа с клавиатуры
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        -- Быстрая вставка через CTRL+V
+
+if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
+if input.KeyCode == Enum.KeyCode.V then
+local clipboard = setclipboard and getclipboard and getclipboard() or ""
+if #clipboard > 0 then
+AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. clipboard
+InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+end
+return
+end
+end
+-- Стирание символов на Backspace
+if input.KeyCode == Enum.KeyCode.Backspace then
+AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
+InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+-- Ввод обычных символов
+elseif input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode.Value >= 32 and input.KeyCode.Value <= 126 then
+local character = string.char(input.KeyCode.Value)
+-- Фикс регистра, если зажат Shift
+if not (UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)) then
+character = string.lower(character)
+end
+AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. character
+InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
+end
+end
 end)
-
--- =========================================================
--- LICENSE KEY INPUT
--- Поддержка:
--- A-Z
--- 0-9
--- -
--- Backspace
--- Ctrl+V
--- =========================================================
-
-UserInputService.InputBegan:Connect(function(input)
-    if not AUTH_CONFIG.MenuVisible then
-        return
-    end
-
-    -- CTRL + V
-    local ctrlDown =
-        UserInputService:IsKeyDown(Enum.KeyCode.LeftControl)
-        or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
-
-    if ctrlDown and input.KeyCode == Enum.KeyCode.V then
-        local clipboardText
-
-        if getclipboard then
-            clipboardText = getclipboard()
-        elseif Clipboard and Clipboard.read then
-            clipboardText = Clipboard.read()
-        end
-
-        if clipboardText then
-            -- Удаляем пробелы и переносы строк,
-            -- дефисы оставляем.
-            local cleanText =
-                tostring(clipboardText):gsub(
-                    "[%s\r\n]",
-                    ""
-                )
-
-            -- Делаем буквы CAPS
-            cleanText = string.upper(cleanText)
-
-            AUTH_CONFIG.CurrentInput =
-                AUTH_CONFIG.CurrentInput .. cleanText
-
-            InputDisplay.Text =
-                "Enter License Key: "
-                .. AUTH_CONFIG.CurrentInput
-        end
-
-        return
-    end
-
-    -- BACKSPACE
-    if input.KeyCode == Enum.KeyCode.Backspace then
-        if #AUTH_CONFIG.CurrentInput > 0 then
-            AUTH_CONFIG.CurrentInput =
-                string.sub(
-                    AUTH_CONFIG.CurrentInput,
-                    1,
-                    -2
-                )
-
-            InputDisplay.Text =
-                "Enter License Key: "
-                .. AUTH_CONFIG.CurrentInput
-        end
-
-        return
-    end
-
-    -- Игнорируем пробел
-    if input.KeyCode == Enum.KeyCode.Space then
-        return
-    end
-
-    local keyName = input.KeyCode.Name
-
-    -- A-Z
-    local letters = {
-        A = "A",
-        B = "B",
-        C = "C",
-        D = "D",
-        E = "E",
-        F = "F",
-        G = "G",
-        H = "H",
-        I = "I",
-        J = "J",
-        K = "K",
-        L = "L",
-        M = "M",
-        N = "N",
-        O = "O",
-        P = "P",
-        Q = "Q",
-        R = "R",
-        S = "S",
-        T = "T",
-        U = "U",
-        V = "V",
-        W = "W",
-        X = "X",
-        Y = "Y",
-        Z = "Z"
-    }
-
-    if letters[keyName] then
-        AUTH_CONFIG.CurrentInput =
-            AUTH_CONFIG.CurrentInput
-            .. letters[keyName]
-
-        InputDisplay.Text =
-            "Enter License Key: "
-            .. AUTH_CONFIG.CurrentInput
-
-        return
-    end
-
-    -- Цифры
-    local numbers = {
-        One = "1",
-        Two = "2",
-        Three = "3",
-        Four = "4",
-        Five = "5",
-        Six = "6",
-        Seven = "7",
-        Eight = "8",
-        Nine = "9",
-        Zero = "0"
-    }
-
-    if numbers[keyName] then
-        AUTH_CONFIG.CurrentInput =
-            AUTH_CONFIG.CurrentInput
-            .. numbers[keyName]
-
-        InputDisplay.Text =
-            "Enter License Key: "
-            .. AUTH_CONFIG.CurrentInput
-
-        return
-    end
-
-    -- Дефис "-"
-    if input.KeyCode == Enum.KeyCode.Minus then
-        AUTH_CONFIG.CurrentInput =
-            AUTH_CONFIG.CurrentInput .. "-"
-
-        InputDisplay.Text =
-            "Enter License Key: "
-            .. AUTH_CONFIG.CurrentInput
-
-        return
-    end
-end)
-
 UserInputService.InputChanged:Connect(function(input)
-    if dragging
-        and input.UserInputType
-            == Enum.UserInputType.MouseMovement
-    then
-        updateMenuPosition(
-            startOffset
-            + (getRealMouseLocation() - dragStart)
-        )
-    end
+if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+local mousePos = getRealMouseLocation()
+local delta = mousePos - dragStart
+updateMenuPosition(startOffset + delta)
+end
 end)
-
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType
-        == Enum.UserInputType.MouseButton1
-    then
-        dragging = false
-    end
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = false
+end
 end)
-
+-- Старт
 initAuthMenu()
+
+
+
