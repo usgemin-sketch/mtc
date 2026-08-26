@@ -1,4 +1,4 @@
-local RAW_SERVER_URL = "srv-da7iimp42hec73bvc990"
+local RAW_SERVER_URL = "https://server-ca9b.onrender.com"
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
