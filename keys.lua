@@ -1,24 +1,13 @@
 
 
-local RAW_SERVER_URL = "srv-da7iimp42hec73bvc990"
+local _vX = "aHR0cHM6Ly9zZXJ2ZXItY2E5Yi5vbnJlbmRlci5jb20="
 if not game:IsLoaded() then game.Loaded:Wait() end
 local HttpService = game:GetService("HttpService")local UserInputService = game:GetService("UserInputService")local ContextActionService = game:GetService("ContextActionService")local Camera = workspace.CurrentCameralocal Players = game:GetService("Players")local request = syn and syn.request or http_request or request
-local b64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'local function encodeBase64(data)
-    return ((data:gsub('.', function(x) 
-        local r,b='',x:byte()
-        for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
-        return r;
-    end)..'0000'):gsub('%d%d%d%d%d%d', function(x)
-        if (#x < 6) then return '' end
-        local c=0
-        for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
-        return b64_chars:sub(c+1,c+1)
-    end)..({ '', '==', '=' })[#data%3+1])end
-local function decodeBase64(data)
-    data = string.gsub(data, '[^'..b64_chars..'=]', '')
-    return (data:gsub('.', function(x)
+local _t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'local function _dX(d)
+    d = string.gsub(d, '[^'.._t..'=]', '')
+    return (d:gsub('.', function(x)
         if (x == '=') then return '' end
-        local c = b64_chars:find(x) - 1
+        local c = _t:find(x) - 1
         local r = ''
         for i=6,1,-1 do r=r..(c%2^i-c%2^(i-1)>0 and '1' or '0') end
         return r;
@@ -27,7 +16,7 @@ local function decodeBase64(data)
         for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
         return string.char(c)
     end))end
-local OBFUSCATED_BASE64_URL = encodeBase64(RAW_SERVER_URL)local BASE_API_URL = decodeBase64(OBFUSCATED_BASE64_URL)
+local BASE_API_URL = _dX(_vX)
 local function getClientHWID()
     local success, result = pcall(function() 
         return game:GetService("RbxAnalyticsService"):GetClientId() or (gethwid and gethwid()) or "FAIL_HWID" 
@@ -47,41 +36,56 @@ local function initAuthMenu()
     MenuBackground.Color = Color3.fromRGB(12, 12, 12)
     MenuBackground.Thickness = 2
     MenuBackground.Filled = true
-    MenuBackground.Visible = true
 
     MenuHeader.Size = Vector2.new(AUTH_CONFIG.Width, 45)
     MenuHeader.Position = startPos
     MenuHeader.Color = Color3.fromRGB(22, 22, 22)
     MenuHeader.Filled = true
-    MenuHeader.Visible = true
 
     MenuTitle.Text = "INK GAME: PREMIUM CLOUD SOFTWARE"
     MenuTitle.Size = 20
+    MenuTitle.Font = 2
     MenuTitle.Color = Color3.fromRGB(255, 0, 120)
-    MenuTitle.Center = true; MenuTitle.Outline = true
+    MenuTitle.Center = true
+    MenuTitle.Outline = true
     MenuTitle.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
-    MenuTitle.Visible = true
 
     InputDisplay.Text = "Enter License Key: "
-    InputDisplay.Size = 18; InputDisplay.Color = Color3.fromRGB(255, 255, 255)
-    InputDisplay.Center = true; InputDisplay.Outline = true
+    InputDisplay.Size = 18
+    InputDisplay.Font = 2
+    InputDisplay.Color = Color3.fromRGB(255, 255, 255)
+    InputDisplay.Center = true
+    InputDisplay.Outline = true
     InputDisplay.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
-    InputDisplay.Visible = true
 
     ActivateButton.Size = Vector2.new(180, 40)
     ActivateButton.Position = startPos + Vector2.new((AUTH_CONFIG.Width / 2) - 90, 145)
-    ActivateButton.Color = Color3.fromRGB(32, 32, 32); ActivateButton.Thickness = 1; ActivateButton.Filled = true; ActivateButton.Visible = true
+    ActivateButton.Color = Color3.fromRGB(32, 32, 32)
+    ActivateButton.Thickness = 1
+    ActivateButton.Filled = true
 
     ButtonText.Text = "ACTIVATE KEY"
-    ButtonText.Size = 16; ButtonText.Color = Color3.fromRGB(0, 255, 180)
-    ButtonText.Center = true; ButtonText.Outline = true
+    ButtonText.Size = 16
+    ButtonText.Font = 2
+    ButtonText.Color = Color3.fromRGB(0, 255, 180)
+    ButtonText.Center = true
+    ButtonText.Outline = true
     ButtonText.Position = ActivateButton.Position + Vector2.new(90, 11)
-    ButtonText.Visible = true
 
     StatusText.Text = "[ Type license key or press CTRL+V to insert ]"
-    StatusText.Size = 13; StatusText.Color = Color3.fromRGB(110, 110, 110)
-    StatusText.Center = true; StatusText.Outline = true
+    StatusText.Size = 13
+    StatusText.Font = 2
+    StatusText.Color = Color3.fromRGB(110, 110, 110)
+    StatusText.Center = true
+    StatusText.Outline = true
     StatusText.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
+
+    MenuBackground.Visible = true
+    MenuHeader.Visible = true
+    MenuTitle.Visible = true
+    InputDisplay.Visible = true
+    ActivateButton.Visible = true
+    ButtonText.Visible = true
     StatusText.Visible = trueend
 local function updateMenuPosition(newPos)
     MenuBackground.Position = newPos; MenuHeader.Position = newPos
@@ -102,7 +106,7 @@ UserInputService.InputBegan:Connect(function(input)
         local mousePos = UserInputService:GetMouseLocation()
         local menuPos = MenuBackground.Position
         
-        if mousePos.X >= menuPos.X and mousePos.X <= (menuPos.X + AUTH_CONFIG.Width) and mousePos.Y >= menuPos.Y and mousePos.Y <= (menuPos.Y + 45) then
+        if mousePos.X >= menuPos.X Association and mousePos.X <= (menuPos.X + AUTH_CONFIG.Width) and mousePos.Y >= menuPos.Y and mousePos.Y <= (menuPos.Y + 45) then
             dragging = true; dragStart = mousePos; startOffset = menuPos
             return
         end
@@ -185,19 +189,19 @@ UserInputService.InputBegan:Connect(function(input)
     if #keyName == 1 and string.find(AllowedChars, keyName) then
         if #AUTH_CONFIG.CurrentInput < 25 then
             AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. keyName
+            InputDisplay.Text = "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
+        end
+    elseif keyCode.Value >= Enum.KeyCode.Zero.Value and keyCode.Value <= Enum.KeyCode.Nine.Value then
+        local digit = tostring(keyCode.Value - Enum.KeyCode.Zero.Value)
+        if #AUTH_CONFIG.CurrentInput < 25 then
+            AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. digit
 
-InputDisplay.Text = "Enter License Key: " .. string.rep("", #AUTH_CONFIG.CurrentInput)
-end
-elseif keyCode.Value >= Enum.KeyCode.Zero.Value and keyCode.Value <= Enum.KeyCode.Nine.Value then
-local digit = tostring(keyCode.Value - Enum.KeyCode.Zero.Value)
-if #AUTH_CONFIG.CurrentInput < 25 then
-AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. digit
 InputDisplay.Text = "Enter License Key: " .. string.rep("", #AUTH_CONFIG.CurrentInput)
 end
 elseif keyCode == Enum.KeyCode.Backspace then
 if #AUTH_CONFIG.CurrentInput > 0 then
 AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput:sub(1, -2)
-InputDisplay.Text = #AUTH_CONFIG.CurrentInput == 0 and "Enter License Key: " or "Enter License Key: " .. string.rep("*", #AUTH_CONFIG.CurrentInput)
+InputDisplay.Text = #AUTH_CONFIG.CurrentInput == 0 and "Enter License Key: " or "Enter License Key: " .. string.rep("", #AUTH_CONFIG.CurrentInput)
 end
 end
 end)
@@ -208,6 +212,6 @@ end
 ContextActionService:BindCoreAction("BlockGameInput", function()
 if AUTH_CONFIG.MenuVisible then return Enum.ContextActionResult.Sink end
 return Enum.ContextActionResult.Pass end, false, unpack(blockKeys))
-initAuthMenu()
+pcall(initAuthMenu)
 
 
