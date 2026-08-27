@@ -1,19 +1,19 @@
--- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER
-
+-- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER (FULL GETHUI EDITION v5.5)
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-
-local BASE_API_URL = "https://server-ca9b.onrender.com"
+local BASE_API_URL = "https://onrender.com"
 
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
-local Camera = workspace.CurrentCamera
+local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 
--- Безопасный глобальный поиск http-клиента без самореференсов
+-- Защищенное хранилище GUI (Полная изоляция от античита)
+local HiddenStorage = gethui and gethui() or game:GetService("CoreGui")
+
+-- Безопасный поиск http-клиента
 local executor_request = (syn and syn.request) 
     or http_request 
     or (http and http.request) 
@@ -28,149 +28,144 @@ local function getClientHWID()
     return success and result or "FAIL_HWID"
 end
 
-local AUTH_CONFIG = {
-    Width = 480,
-    Height = 260,
-    MenuVisible = true,
-    CurrentInput = ""
-}
+-- Удаление старых сессий интерфейса при повторном инжекте
+if HiddenStorage:FindFirstChild("InkKeySystem") then HiddenStorage.InkKeySystem:Destroy() end
+if HiddenStorage:FindFirstChild("InkPremiumMenu") then HiddenStorage.InkPremiumMenu:Destroy() end
+if HiddenStorage:FindFirstChild("InkVisualsLayer") then HiddenStorage.InkVisualsLayer:Destroy() end
 
-local function getRealMouseLocation()
-    local mousePos = UserInputService:GetMouseLocation()
-    local inset = GuiService:GetGuiInset()
-    return Vector2.new(mousePos.X, mousePos.Y - inset.Y)
-end
+-- ========================================================
+-- 🔑 СОЗДАНИЕ ОКНА АВТОРИЗАЦИИ ВНУТРИ GETHUI()
+-- ========================================================
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.Name = "InkKeySystem"
+KeyGui.ResetOnSpawn = false
+KeyGui.Parent = HiddenStorage
 
-local startPos = Vector2.new(
-    (Camera.ViewportSize.X / 2) - (AUTH_CONFIG.Width / 2),
-    (Camera.ViewportSize.Y / 2) - (AUTH_CONFIG.Height / 2)
-)
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Name = "KeyFrame"
+KeyFrame.Size = UDim2.new(0, 360, 0, 200)
+KeyFrame.Position = UDim2.new(0.5, -180, 0.4, -100)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Матовый черный
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Active = true
+KeyFrame.Draggable = true -- Окно ключа можно таскать мышкой!
+KeyFrame.Parent = KeyGui
 
-local MenuBackground = Drawing.new("Square")
-local MenuHeader = Drawing.new("Square")
-local MenuTitle = Drawing.new("Text")
-local InputDisplay = Drawing.new("Text")
-local ActivateButton = Drawing.new("Square")
-local ButtonText = Drawing.new("Text")
-local StatusText = Drawing.new("Text")
+local KeyCorner = Instance.new("UICorner")
+KeyCorner.CornerRadius = UDim.new(0, 12)
+KeyCorner.Parent = KeyFrame
 
-local function initAuthMenu()
-    MenuBackground.Size = Vector2.new(AUTH_CONFIG.Width, AUTH_CONFIG.Height)
-    MenuBackground.Position = startPos
-    MenuBackground.Color = Color3.fromRGB(12, 12, 12)
-    MenuBackground.Thickness = 2
-    MenuBackground.Filled = true
+local KeyStroke = Instance.new("UIStroke")
+KeyStroke.Thickness = 2
+KeyStroke.Color = Color3.fromRGB(255, 110, 0) -- Неоново-оранжевый контур
+KeyStroke.Parent = KeyFrame
 
-    MenuHeader.Size = Vector2.new(AUTH_CONFIG.Width, 45)
-    MenuHeader.Position = startPos
-    MenuHeader.Color = Color3.fromRGB(22, 22, 22)
-    MenuHeader.Filled = true
+local KeyTitle = Instance.new("TextLabel")
+KeyTitle.Size = UDim2.new(1, 0, 0, 40)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Text = "🔑 INK CLOUD: LICENSE VERIFICATION"
+KeyTitle.TextColor3 = Color3.fromRGB(255, 110, 0)
+KeyTitle.TextSize = 14
+KeyTitle.Font = Enum.Font.SourceSansBold
+KeyTitle.Parent = KeyFrame
 
-    MenuTitle.Text = "INK GAME: PREMIUM CLOUD SOFTWARE"
-    MenuTitle.Size = 20
-    MenuTitle.Color = Color3.fromRGB(255, 0, 120)
-    MenuTitle.Center = true
-    MenuTitle.Outline = true
-    MenuTitle.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
+local Divider = Instance.new("Frame")
+Divider.Size = UDim2.new(1, -20, 0, 1)
+Divider.Position = UDim2.new(0, 10, 0, 40)
+Divider.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Divider.BorderSizePixel = 0
+Divider.Parent = KeyFrame
 
-    InputDisplay.Text = "Enter License Key: "
-    InputDisplay.Size = 18
-    InputDisplay.Color = Color3.fromRGB(255, 255, 255)
-    InputDisplay.Center = true
-    InputDisplay.Outline = true
-    InputDisplay.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
+-- Нативное текстовое поле Роблокса (Ввод без костылей с клавиатуры!)
+local TextBox = Instance.new("TextBox")
+TextBox.Size = UDim2.new(1, -40, 0, 38)
+TextBox.Position = UDim2.new(0, 20, 0, 60)
+TextBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TextBox.BorderSizePixel = 0
+TextBox.Text = ""
+TextBox.ClearTextOnFocus = false
+TextBox.PlaceholderText = "Вставь или введи свой ключ лицензии..."
+TextBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 110)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.TextSize = 14
+TextBox.Font = Enum.Font.SourceSans
+TextBox.Parent = KeyFrame
 
-    ActivateButton.Size = Vector2.new(180, 40)
-    ActivateButton.Position = startPos + Vector2.new((AUTH_CONFIG.Width / 2) - 90, 145)
-    ActivateButton.Color = Color3.fromRGB(32, 32, 32)
-    ActivateButton.Thickness = 1
-    ActivateButton.Filled = true
+local BoxCorner = Instance.new("UICorner")
+BoxCorner.CornerRadius = UDim.new(0, 6)
+BoxCorner.Parent = TextBox
 
-    ButtonText.Text = "ACTIVATE KEY"
-    ButtonText.Size = 16
-    ButtonText.Color = Color3.fromRGB(0, 255, 180)
-    ButtonText.Center = true
-    ButtonText.Outline = true
-    ButtonText.Position = ActivateButton.Position + Vector2.new(90, 11)
+local BoxStroke = Instance.new("UIStroke")
+BoxStroke.Thickness = 1
+BoxStroke.Color = Color3.fromRGB(55, 55, 55)
+BoxStroke.Parent = TextBox
 
-    StatusText.Text = "[ Type license key or press CTRL+V to insert ]"
-    StatusText.Size = 13
-    StatusText.Color = Color3.fromRGB(110, 110, 110)
-    StatusText.Center = true
-    StatusText.Outline = true
-    StatusText.Position = startPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
+-- Кнопка активации
+local EnterBtn = Instance.new("TextButton")
+EnterBtn.Size = UDim2.new(1, -40, 0, 38)
+EnterBtn.Position = UDim2.new(0, 20, 0, 115)
+EnterBtn.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+EnterBtn.Text = "АКТИВИРОВАТЬ КЛЮЧ"
+EnterBtn.TextColor3 = Color3.fromRGB(255, 110, 0)
+EnterBtn.TextSize = 14
+EnterBtn.Font = Enum.Font.SourceSansBold
+EnterBtn.AutoButtonColor = false
+EnterBtn.Parent = KeyFrame
 
-    MenuBackground.Visible = true
-    MenuHeader.Visible = true
-    MenuTitle.Visible = true
-    InputDisplay.Visible = true
-    ActivateButton.Visible = true
-    ButtonText.Visible = true
-    StatusText.Visible = true
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 6)
+BtnCorner.Parent = EnterBtn
 
-    print("[INK-GUI]: Панель успешно создана и выведена на экран!")
-end
+local EnterStroke = Instance.new("UIStroke")
+EnterStroke.Thickness = 1
+EnterStroke.Color = Color3.fromRGB(255, 110, 0)
+EnterStroke.Parent = EnterBtn
 
-local function updateMenuPosition(newPos)
-    MenuBackground.Position = newPos
-    MenuHeader.Position = newPos
-    MenuTitle.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 12)
-    InputDisplay.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 90)
-    ActivateButton.Position = newPos + Vector2.new((AUTH_CONFIG.Width / 2) - 90, 145)
-    ButtonText.Position = ActivateButton.Position + Vector2.new(90, 11)
-    StatusText.Position = newPos + Vector2.new(AUTH_CONFIG.Width / 2, 215)
-end
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, 0, 0, 25)
+StatusLabel.Position = UDim2.new(0, 0, 1, -25)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "[ Поддерживается вставка через CTRL+V ]"
+StatusLabel.TextColor3 = Color3.fromRGB(110, 110, 110)
+StatusLabel.TextSize = 11
+StatusLabel.Font = Enum.Font.SourceSansItalic
+StatusLabel.Parent = KeyFrame
 
-local function destroyAuthMenu()
-    AUTH_CONFIG.MenuVisible = false
-    MenuBackground:Remove()
-    MenuHeader:Remove()
-    MenuTitle:Remove()
-    InputDisplay:Remove()
-    ActivateButton:Remove()
-    ButtonText:Remove()
-    StatusText:Remove()
-end
-
-local dragging = false
-local dragStart = nil
-local startOffset = nil
-local capsLockState = false
-
--- ФУНКЦИЯ ПРОВЕРКИ КЛЮЧА И ЗАГРУЗКИ ESP ИЗ СЕРВЕРА
+-- ========================================================
+-- 📡 ФУНКЦИЯ ОБЛАЧНОЙ ПРОВЕРКИ И ЗАГРУЗКИ СКРИПТА
+-- ========================================================
 local function checkLicenseKey()
-    if #AUTH_CONFIG.CurrentInput == 0 then
-        StatusText.Color = Color3.fromRGB(255, 150, 0)
-        StatusText.Text = "🚨 PLEASE ENTER A LICENSE KEY FIRST!"
+    local currentInput = TextBox.Text
+    
+    if #currentInput == 0 then
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 150, 0)
+        StatusLabel.Text = "🚨 ПОЖАЛУЙСТА, СНАЧАЛА ВВЕДИТЕ КЛЮЧ!"
         return
     end
 
     if not executor_request then
-        StatusText.Color = Color3.fromRGB(255, 50, 50)
-        StatusText.Text = "❌ CRITICAL ERROR: EXECUTOR MISSING HTTP SUPPORT!"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+        StatusLabel.Text = "❌ ОШИБКА: ЭКЗЕКУТОР НЕ ПОДДЕРЖИВАЕТ HTTP ЗАПРОСЫ!"
         return
     end
 
-    StatusText.Color = Color3.fromRGB(255, 180, 0)
-    StatusText.Text = "⏳ CONNECTING... WAKING UP SERVER (PLEASE WAIT 15-40s)"
-    task.wait(0.5)
-
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 180, 0)
+    StatusLabel.Text = "⏳ ПОДКЛЮЧЕНИЕ К СЕРВЕРУ... ПРОБУЖДЕНИЕ RENDER (15-40 сек)"
+    EnterBtn.Text = "ПОДКЛЮЧЕНИЕ..."
+    
     local hwid = getClientHWID()
     local rblxName = Players.LocalPlayer and Players.LocalPlayer.Name or "Unknown"
     local cacheBuster = math.random(100000, 999999)
 
     local targetUrl = BASE_API_URL
         .. "/verify?key="
-        .. HttpService:UrlEncode(AUTH_CONFIG.CurrentInput)
+        .. HttpService:UrlEncode(currentInput)
         .. "&hwid="
         .. HttpService:UrlEncode(hwid)
         .. "&username="
         .. HttpService:UrlEncode(rblxName)
         .. "&cb="
         .. cacheBuster
-
-    StatusText.Color = Color3.fromRGB(255, 220, 0)
-    StatusText.Text = "📡 SENDING REQUEST... VERIFYING HWID AND LICENSE KEY"
 
     local success, response = pcall(function()
         return executor_request({
@@ -182,13 +177,17 @@ local function checkLicenseKey()
 
     if success and response then
         if response.StatusCode == 200 then
-            StatusText.Color = Color3.fromRGB(0, 255, 0)
-            StatusText.Text = "✅ SUCCESS! KEY APPROVED. DOWNLOADING PREMIUM SOFTWARE..."
+            -- КЛЮЧ ВЕРЕН: Запускаем зеленую анимацию iOS стиля на кнопке
+            EnterBtn.Text = "ДОСТУП ОДОБРЕН!"
+            TweenService:Create(EnterBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 50, 20), TextColor3 = Color3.fromRGB(35, 255, 35)}):Play()
+            TweenService:Create(EnterStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(35, 255, 35)}):Play()
+            StatusLabel.TextColor3 = Color3.fromRGB(35, 255, 35)
+            StatusLabel.Text = "✅ СКАЧИВАНИЕ ПРЕМИУМ-СКРИПТА С СЕРВЕРА..."
+            
             task.wait(1.5)
+            KeyGui:Destroy() -- Полностью стираем окно ключа из gethui() перед запуском чита
 
-            destroyAuthMenu()
-
-            -- Выкачиваем софт прямо из твоего массива CHEAT_LINES на бэкенде
+            -- Выкачиваем боевой скрипт прямо из твоего бэкенда на Render
             local scriptUrl = BASE_API_URL .. "/getscript"
             local loadSuccess, scriptContent = pcall(function()
                 if game.HttpGet then
@@ -205,119 +204,34 @@ local function checkLicenseKey()
                     func()
                 end)
                 if not runSuccess then
-                    warn("[INK-ERROR]: Ошибка рантайма чита: " .. tostring(errorMsg))
+                    warn("[INK-ERROR]: Ошибка рантайма подгруженного чита: " .. tostring(errorMsg))
                 end
             else
-                warn("[INK-ERROR]: Не удалось получить код с твоего сервера.")
+                warn("[INK-ERROR]: Не удалось получить код с твоего NodeJS сервера.")
             end
         else
-            StatusText.Color = Color3.fromRGB(255, 50, 50)
-            StatusText.Text = "❌ AUTH FAILED! INVALID KEY OR HWID MISMATCH (CODE: " .. tostring(response.StatusCode) .. ")"
+            -- КЛЮЧ НЕВЕРЕН: Красная вспышка
+            EnterBtn.Text = "ОШИБКА АВТОРИЗАЦИИ!"
+            TweenService:Create(EnterBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 10, 10), TextColor3 = Color3.fromRGB(255, 35, 35)}):Play()
+            TweenService:Create(EnterStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 35, 35)}):Play()
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+            StatusLabel.Text = "❌ КЛЮЧ НЕ СУЩЕСТВУЕТ ИЛИ HWID НЕ СОВПАДАЕТ! (КОД: " .. tostring(response.StatusCode) .. ")"
+            
+            task.wait(2)
+            EnterBtn.Text = "АКТИВИРОВАТЬ КЛЮЧ"
+            TweenService:Create(EnterBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(32, 32, 32), TextColor3 = Color3.fromRGB(255, 110, 0)}):Play()
+            TweenService:Create(EnterStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 110, 0)}):Play()
         end
     else
-        StatusText.Color = Color3.fromRGB(255, 100, 50)
-        StatusText.Text = "⚠️ SERVER TIMEOUT (CODE: 0)! STILL SLEEPING. TRY AGAIN IN A MOMENT."
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 50)
+        StatusLabel.Text = "⚠️ ТАЙМАУТ СЕРВЕРА! RENDER ЕЩЁ СПИТ. ПОПРОБУЙТЕ СНОВА."
+        EnterBtn.Text = "АКТИВИРОВАТЬ КЛЮЧ"
     end
 end
 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not AUTH_CONFIG.MenuVisible then return end
-
-    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.CapsLock then
-        capsLockState = not capsLockState
-        return
-    end
-
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mousePos = getRealMouseLocation()
-        local menuPos = MenuBackground.Position
-        local btnPos = ActivateButton.Position
-
-        if mousePos.X >= btnPos.X
-            and mousePos.X <= btnPos.X + 180
-            and mousePos.Y >= btnPos.Y
-            and mousePos.Y <= btnPos.Y + 40
-        then
-            ActivateButton.Color = Color3.fromRGB(45, 45, 45)
-            task.wait(0.1)
-            ActivateButton.Color = Color3.fromRGB(32, 32, 32)
-            
-            checkLicenseKey()
-            return
-        end
-
-        if mousePos.X >= menuPos.X
-            and mousePos.X <= menuPos.X + AUTH_CONFIG.Width
-            and mousePos.Y >= menuPos.Y
-            and mousePos.Y <= menuPos.Y + 45
-        then
-            dragging = true
-            dragStart = mousePos
-            startOffset = menuPos
-            return
-        end
-    end
-
-    if input.UserInputType == Enum.UserInputType.Keyboard then
-        local isCtrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
-        
-        if input.KeyCode == Enum.KeyCode.Return then
-            checkLicenseKey()
-            return
-        end
-
-        if isCtrl and input.KeyCode == Enum.KeyCode.V then
-            local clipboard = (setclipboard and getclipboard and getclipboard()) or ""
-            if type(clipboard) == "string" and #clipboard > 0 then
-                AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. clipboard
-                InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
-            end
-            return
-        end
-
-        if input.KeyCode == Enum.KeyCode.Backspace then
-            AUTH_CONFIG.CurrentInput = string.sub(AUTH_CONFIG.CurrentInput, 1, -2)
-            InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
-            return
-        end
-
-        if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Enum.KeyCode.LeftShift and input.KeyCode ~= Enum.KeyCode.RightShift and input.KeyCode ~= Enum.KeyCode.LeftControl and input.KeyCode ~= Enum.KeyCode.RightControl and input.KeyCode ~= Enum.KeyCode.CapsLock and input.KeyCode ~= Enum.KeyCode.Return then
-            
-            local success, rawChar = pcall(function()
-                return UserInputService:GetStringForKeyCode(input.KeyCode)
-            end)
-
-            if success and rawChar and #rawChar == 1 then
-                local isShift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
-                local character = rawChar
-
-                if string.match(rawChar, "%a") then
-                    if (isShift and not capsLockState) or (capsLockState and not isShift) then
-                        character = string.upper(rawChar)
-                    else
-                        character = string.lower(rawChar)
-                    end
-                end
-
-                AUTH_CONFIG.CurrentInput = AUTH_CONFIG.CurrentInput .. character
-                InputDisplay.Text = "Enter License Key: " .. AUTH_CONFIG.CurrentInput
-            end
-        end
-    end
+-- Активация по клику на кнопку
+EnterBtn.MouseButton1Click:Connect(function()
+    checkLicenseKey()
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local mousePos = getRealMouseLocation()
-        local delta = mousePos - dragStart
-        updateMenuPosition(startOffset + delta)
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.MouseButton1 then
-        dragging = false
-    end
-end)
-
-initAuthMenu()
+print("[INK-LOADER]: Облачный лоадер FULL GETHUI успешно запущен!");
