@@ -1,4 +1,3 @@
--- INK GAME: PREMIUM CLOUD SOFTWARE WITH AUTO-LOADER (FULL GETHUI EDITION v5.5)
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -6,14 +5,11 @@ end
 local BASE_API_URL = "https://onrender.com"
 
 local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 
--- Защищенное хранилище GUI (Полная изоляция от античита)
 local HiddenStorage = gethui and gethui() or game:GetService("CoreGui")
 
--- Безопасный поиск http-клиента
 local executor_request = (syn and syn.request) 
     or http_request 
     or (http and http.request) 
@@ -28,14 +24,10 @@ local function getClientHWID()
     return success and result or "FAIL_HWID"
 end
 
--- Удаление старых сессий интерфейса при повторном инжекте
 if HiddenStorage:FindFirstChild("InkKeySystem") then HiddenStorage.InkKeySystem:Destroy() end
 if HiddenStorage:FindFirstChild("InkPremiumMenu") then HiddenStorage.InkPremiumMenu:Destroy() end
 if HiddenStorage:FindFirstChild("InkVisualsLayer") then HiddenStorage.InkVisualsLayer:Destroy() end
 
--- ========================================================
--- 🔑 СОЗДАНИЕ ОКНА АВТОРИЗАЦИИ ВНУТРИ GETHUI()
--- ========================================================
 local KeyGui = Instance.new("ScreenGui")
 KeyGui.Name = "InkKeySystem"
 KeyGui.ResetOnSpawn = false
@@ -45,10 +37,10 @@ local KeyFrame = Instance.new("Frame")
 KeyFrame.Name = "KeyFrame"
 KeyFrame.Size = UDim2.new(0, 360, 0, 200)
 KeyFrame.Position = UDim2.new(0.5, -180, 0.4, -100)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) -- Матовый черный
+KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 KeyFrame.BorderSizePixel = 0
 KeyFrame.Active = true
-KeyFrame.Draggable = true -- Окно ключа можно таскать мышкой!
+KeyFrame.Draggable = true
 KeyFrame.Parent = KeyGui
 
 local KeyCorner = Instance.new("UICorner")
@@ -57,7 +49,7 @@ KeyCorner.Parent = KeyFrame
 
 local KeyStroke = Instance.new("UIStroke")
 KeyStroke.Thickness = 2
-KeyStroke.Color = Color3.fromRGB(255, 110, 0) -- Неоново-оранжевый контур
+KeyStroke.Color = Color3.fromRGB(255, 110, 0)
 KeyStroke.Parent = KeyFrame
 
 local KeyTitle = Instance.new("TextLabel")
@@ -76,7 +68,6 @@ Divider.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 Divider.BorderSizePixel = 0
 Divider.Parent = KeyFrame
 
--- Нативное текстовое поле Роблокса (Ввод без костылей с клавиатуры!)
 local TextBox = Instance.new("TextBox")
 TextBox.Size = UDim2.new(1, -40, 0, 38)
 TextBox.Position = UDim2.new(0, 20, 0, 60)
@@ -100,7 +91,6 @@ BoxStroke.Thickness = 1
 BoxStroke.Color = Color3.fromRGB(55, 55, 55)
 BoxStroke.Parent = TextBox
 
--- Кнопка активации
 local EnterBtn = Instance.new("TextButton")
 EnterBtn.Size = UDim2.new(1, -40, 0, 38)
 EnterBtn.Position = UDim2.new(0, 20, 0, 115)
@@ -131,9 +121,6 @@ StatusLabel.TextSize = 11
 StatusLabel.Font = Enum.Font.SourceSansItalic
 StatusLabel.Parent = KeyFrame
 
--- ========================================================
--- 📡 ФУНКЦИЯ ОБЛАЧНОЙ ПРОВЕРКИ И ЗАГРУЗКИ СКРИПТА
--- ========================================================
 local function checkLicenseKey()
     local currentInput = TextBox.Text
     
@@ -177,7 +164,6 @@ local function checkLicenseKey()
 
     if success and response then
         if response.StatusCode == 200 then
-            -- КЛЮЧ ВЕРЕН: Запускаем зеленую анимацию iOS стиля на кнопке
             EnterBtn.Text = "ДОСТУП ОДОБРЕН!"
             TweenService:Create(EnterBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 50, 20), TextColor3 = Color3.fromRGB(35, 255, 35)}):Play()
             TweenService:Create(EnterStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(35, 255, 35)}):Play()
@@ -185,9 +171,8 @@ local function checkLicenseKey()
             StatusLabel.Text = "✅ СКАЧИВАНИЕ ПРЕМИУМ-СКРИПТА С СЕРВЕРА..."
             
             task.wait(1.5)
-            KeyGui:Destroy() -- Полностью стираем окно ключа из gethui() перед запуском чита
+            KeyGui:Destroy()
 
-            -- Выкачиваем боевой скрипт прямо из твоего бэкенда на Render
             local scriptUrl = BASE_API_URL .. "/getscript"
             local loadSuccess, scriptContent = pcall(function()
                 if game.HttpGet then
@@ -210,7 +195,6 @@ local function checkLicenseKey()
                 warn("[INK-ERROR]: Не удалось получить код с твоего NodeJS сервера.")
             end
         else
-            -- КЛЮЧ НЕВЕРЕН: Красная вспышка
             EnterBtn.Text = "ОШИБКА АВТОРИЗАЦИИ!"
             TweenService:Create(EnterBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 10, 10), TextColor3 = Color3.fromRGB(255, 35, 35)}):Play()
             TweenService:Create(EnterStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 35, 35)}):Play()
@@ -229,7 +213,6 @@ local function checkLicenseKey()
     end
 end
 
--- Активация по клику на кнопку
 EnterBtn.MouseButton1Click:Connect(function()
     checkLicenseKey()
 end)
