@@ -1,8 +1,8 @@
 -- =================================================================
--- Client Key System Loader v2.1 (Fixed UI Lifetime & Time Display)
+-- Client Key System Loader v2.2 (gethui / drawing parent mode)
 -- =================================================================
 
-local SERVER_URL = "https://server-ca9b.onrender.com"
+local SERVER_URL = "https://your-render-app-name.onrender.com"
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -30,10 +30,23 @@ local function HttpRequest(url)
     end
 end
 
+-- Получение безопасного контейнера для GUI (gethui или альтернатива)
+local function GetSafeGuiParent()
+    if gethui then
+        return gethui()
+    elseif get_hidden_gui then
+        return get_hidden_gui()
+    else
+        return game:GetService("CoreGui")
+    end
+end
+
 local function CreateKeyUI()
-    local CoreGui = gethui and gethui() or game:GetService("CoreGui")
-    if CoreGui:FindFirstChild("InkKeySystemUI") then
-        CoreGui.InkKeySystemUI:Destroy()
+    local ParentContainer = GetSafeGuiParent()
+
+    -- Удаление старого окна, если оно существует
+    if ParentContainer:FindFirstChild("InkKeySystemUI") then
+        ParentContainer.InkKeySystemUI:Destroy()
     end
 
     local ScreenGui = Instance.new("ScreenGui")
@@ -42,12 +55,11 @@ local function CreateKeyUI()
     local KeyInput = Instance.new("TextBox")
     local SubmitBtn = Instance.new("TextButton")
     
-    -- Информационные строки
-    local StatusLabel = Instance.new("TextLabel")      -- Строка 1: Статус
-    local ExpireLabel = Instance.new("TextLabel")      -- Строка 2: Время подписки
+    local StatusLabel = Instance.new("TextLabel")
+    local ExpireLabel = Instance.new("TextLabel")
 
     ScreenGui.Name = "InkKeySystemUI"
-    ScreenGui.Parent = CoreGui
+    ScreenGui.Parent = ParentContainer
 
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
@@ -100,7 +112,6 @@ local function CreateKeyUI()
     btnCorner.CornerRadius = UDim.new(0, 6)
     btnCorner.Parent = SubmitBtn
 
-    -- 1-я строка статуса
     StatusLabel.Name = "StatusLabel"
     StatusLabel.Parent = MainFrame
     StatusLabel.BackgroundTransparency = 1
@@ -111,7 +122,6 @@ local function CreateKeyUI()
     StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     StatusLabel.TextSize = 13
 
-    -- 2-я строка статуса (остаток времени подписки)
     ExpireLabel.Name = "ExpireLabel"
     ExpireLabel.Parent = MainFrame
     ExpireLabel.BackgroundTransparency = 1
@@ -160,7 +170,6 @@ local function CreateKeyUI()
                         StatusLabel.Text = "Доступ разрешён!"
                         StatusLabel.TextColor3 = Color3.fromRGB(75, 255, 75)
                         
-                        -- Фиксируем отображение оставшегося времени
                         if response.expiresIn then
                             ExpireLabel.Text = "Подписка: осталось " .. tostring(response.expiresIn)
                             ExpireLabel.TextColor3 = Color3.fromRGB(0, 230, 120)
@@ -169,7 +178,6 @@ local function CreateKeyUI()
                             ExpireLabel.TextColor3 = Color3.fromRGB(0, 230, 120)
                         end
 
-                        -- Даём 2.5 секунды, чтобы пользователь прочитал остаток времени
                         task.wait(2.5)
                         ScreenGui:Destroy()
 
@@ -177,7 +185,7 @@ local function CreateKeyUI()
                         if executable then
                             executable()
                         else
-                            warn("[INK-LOADER]: Ошибка выполнения скрипта: " .. tostring(err))
+                            warn("[INK-LOADER]: Ошибка выполнения: " .. tostring(err))
                         end
                     else
                         SubmitBtn.Active = true
@@ -188,12 +196,12 @@ local function CreateKeyUI()
                     end
                 else
                     SubmitBtn.Active = true
-                    StatusLabel.Text = "Ошибка: Некорректный JSON от сервера"
+                    StatusLabel.Text = "Ошибка: Некорректный JSON"
                     StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
                 end
             else
                 SubmitBtn.Active = true
-                StatusLabel.Text = "Ошибка: Нет связи с Render"
+                StatusLabel.Text = "Ошибка: Нет связи с сервером"
                 StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
             end
         end)
