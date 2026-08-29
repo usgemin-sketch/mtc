@@ -2,7 +2,7 @@
 -- INK HUB — Clean Client Loader
 -- =================================================================
 
-local SERVER_URL = "srv-da7iimp42hec73bvc990" 
+local SERVER_URL = "https://server-ca9b.onrender.com" 
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
