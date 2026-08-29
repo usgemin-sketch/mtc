@@ -1,6 +1,6 @@
 -- INK HUB CLIENT LOADER (FIXED & ENHANCED)
-_G.INK_KEY = _G.INK_KEY or "ТВОЙ_КЛЮЧ_ИЗ_JSONBIN"
-_G.INK_SERVER_URL = _G.INK_SERVER_URL or "https://your-render-app.onrender.com" -- Без слэша на конце!
+_G.INK_KEY = _G.INK_KEY or "INK-30D-4C71-D3E4"
+_G.INK_SERVER_URL = _G.INK_SERVER_URL or "https://server-ca9b.onrender.com" -- Без слэша на конце!
 
 local HttpService = game:GetService("HttpService")
 local RbxAnalytics = game:GetService("RbxAnalyticsService")
