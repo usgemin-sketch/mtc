@@ -2,7 +2,7 @@
 -- Client Key System Loader v2.2 (gethui / drawing parent mode)
 -- =================================================================
 
-local SERVER_URL = "https://your-render-app-name.onrender.com"
+local SERVER_URL = "https://server-ca9b.onrender.com"
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
