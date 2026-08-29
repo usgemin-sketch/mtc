@@ -1,11 +1,12 @@
--- INK HUB CLIENT LOADER (FIXED & ENHANCED)
-_G.INK_KEY = _G.INK_KEY or "INK-30D-4C71-D3E4"
-_G.INK_SERVER_URL = _G.INK_SERVER_URL or "https://server-ca9b.onrender.com" -- Без слэша на конце!
+-- INK HUB CLIENT LOADER (CLEAN SCOPE)
+local CONFIG = {
+    Key = "INK-30D-4C71-D3E4",
+    ServerUrl = "https://server-ca9b.onrender.com" -- Без слэша на конце!
+}
 
 local HttpService = game:GetService("HttpService")
 local RbxAnalytics = game:GetService("RbxAnalyticsService")
 
--- Универсальная функция отправки HTTP-запросов (работает во всех эксплойтах)
 local httpRequest = (syn and syn.request) 
     or (http and http.request) 
     or http_request 
@@ -17,30 +18,27 @@ local function getHWID()
     pcall(function()
         rawHwid = RbxAnalytics:GetClientId()
     end)
-    if rawHwid == "" or not rawHwid then
+    if not rawHwid or rawHwid == "" then
         rawHwid = "FALLBACK_HWID_" .. game:GetService("Players").LocalPlayer.UserId
     end
     return rawHwid
 end
 
-_G.INK_HWID = getHWID()
+local hwid = getHWID()
+local cleanUrl = string.gsub(CONFIG.ServerUrl, "/+$", "")
+local authUrl = cleanUrl .. "/verify?key=" .. tostring(CONFIG.Key) .. "&hwid=" .. tostring(hwid)
 
--- Нормализация URL
-local cleanUrl = string.gsub(_G.INK_SERVER_URL, "/+$", "")
-local authUrl = cleanUrl .. "/verify?key=" .. tostring(_G.INK_KEY) .. "&hwid=" .. tostring(_G.INK_HWID)
-
-print("[INK HUB]: Подключение к серверу " .. cleanUrl .. "...")
+print("[INK HUB]: Запрос к серверу авторизации...")
 
 local responseBody = nil
 local statusCode = 0
 
 if httpRequest then
-    -- Безопасный способ через httpRequest (не падаем при 403/404/500)
     local res = httpRequest({
         Url = authUrl,
         Method = "GET",
         Headers = {
-            ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) InkHubClient/3.0"
+            ["User-Agent"] = "InkHubClient/3.0"
         }
     })
     if res then
@@ -48,44 +46,40 @@ if httpRequest then
         statusCode = res.StatusCode
     end
 else
-    -- Резервный способ через game:HttpGet
     local success, res = pcall(function()
         return game:HttpGet(authUrl)
     end)
     if success then
         responseBody = res
         statusCode = 200
-    else
-        responseBody = res
     end
 end
 
 if not responseBody or responseBody == "" then
-    warn("[INK HUB ERROR]: Сервер не ответил. Возможно, Render " .. cleanUrl .. " ещё просыпается (подожди 20 сек) или URL указан неверно.")
+    warn("[INK HUB ERROR]: Сервер не ответил. Проверь статус Render.")
     return
 end
 
--- Безопасный парсинг JSON
 local data = nil
-local parseSuccess, parseErr = pcall(function()
+local parseSuccess = pcall(function()
     data = HttpService:JSONDecode(responseBody)
 end)
 
 if not parseSuccess or type(data) ~= "table" then
-    warn("[INK HUB ERROR]: Сервер вернул не JSON. Ответ сервера:")
-    print(tostring(responseBody))
+    warn("[INK HUB ERROR]: Некорректный ответ сервера: " .. tostring(responseBody))
     return
 end
 
 if data.status == "success" then
-    print("[INK HUB]: Успешная авторизация! Срок подписки: " .. tostring(data.expiresIn))
+    print("[INK HUB]: Авторизация успешна! Срок: " .. tostring(data.expiresIn))
+    
+    -- Исполняем полученный скрипт
     local mainScript, err = loadstring(data.script)
     if mainScript then
         task.spawn(mainScript)
     else
-        warn("[INK HUB ERROR]: Ошибка синтаксиса полученного скрипта: " .. tostring(err))
+        warn("[INK HUB ERROR]: Ошибка синтаксиса модуля: " .. tostring(err))
     end
 else
-    local errorMsg = data.message or "Неизвестная ошибка сервера"
-    warn("[INK HUB AUTH FAILED] Код " .. tostring(statusCode) .. ": " .. tostring(errorMsg))
+    warn("[INK HUB AUTH FAILED]: " .. tostring(data.message or "Ошибка доступа"))
 end
