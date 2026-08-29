@@ -6,7 +6,7 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- URL твоего хостинга на Render (замени на свою актуальную ссылку)
+-- URL твоего хостинга на Render
 local BASE_SERVER_URL = "https://onrender.com"
 
 -- Защищенный метод получения HWID игрока
@@ -15,7 +15,7 @@ local HWID = game:GetService("RbxAnalyticsService"):GetClientId()
 -- Имя файла для сохранения ключа на ПК пользователя
 local CONFIG_FILE = "InkHub_AuthKey.txt"
 
--- Загрузка Orion Library (Профессиональная GUI библиотека)
+-- ИСПРАВЛЕНО: Рабочая зеркальная ссылка на Orion Library взамен удаленной оригинальной
 local OrionLib = loadstring(game:HttpGet(('https://githubusercontent.com')))()
 
 -- Создание главного окна авторизации
@@ -78,7 +78,6 @@ local function VerifyLicense()
 
     local response
     local success, err = pcall(function()
-        -- Отправляем безопасный GET-запрос через функции чита
         response = request({
             Url = ApiUrl,
             Method = "GET"
@@ -101,7 +100,6 @@ local function VerifyLicense()
             return
         end
 
-        -- Если ключ валидный, привязался или HWID совпал
         if data.status == "success" and data.script then
             OrionLib:MakeNotification({
                 Name = "Успех!",
@@ -110,16 +108,13 @@ local function VerifyLicense()
                 Time = 4
             })
             
-            -- Сохраняем рабочий ключ на ПК, чтобы не вводить повторно
             if writefile then
                 pcall(function() writefile(CONFIG_FILE, EnteredKey) end)
             end
 
-            -- Закрываем окно авторизации Orion Lib
             task.wait(1.5)
             OrionLib:Destroy()
 
-            -- Безопасно компилируем и выполняем полученный из облака боевой код
             local func, compileError = loadstring(data.script)
             if func then
                 func()
@@ -127,7 +122,6 @@ local function VerifyLicense()
                 warn("[InkHub Error]: Ошибка компиляции чита: " .. tostring(compileError))
             end
         else
-            -- Обработка ошибок (неверный ключ, миссматч HWID)
             OrionLib:MakeNotification({
                 Name = "Доступ Отклонен",
                 Content = data.message or "Неверный ключ лицензии!",
