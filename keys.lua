@@ -1,26 +1,22 @@
 -- =================================================================
--- Client Key System Loader (Compatible with Potassium & standard APIs)
+-- Client Key System Loader v2 (30-day Expiration Tracker)
 -- =================================================================
 
--- Укажи URL твоего Render-сервиса (без завершающего слэша)
 local SERVER_URL = "https://server-ca9b.onrender.com"
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Функция получения уникального HWID в зависимости от среды инжектора
 local function GetHWID()
     if gethwid then return gethwid() end
     if get_hwid then return get_hwid() end
     if getdeviceid then return getdeviceid() end
     
-    -- Резервный расчет уникального идентификатора клиента
     local clientId = game:GetService("RbxAnalyticsService"):GetClientId()
     return clientId or "UNKNOWN_HWID"
 end
 
--- Функция выполнения HTTP GET запросов (совместимая с большинством эксплойтов)
 local function HttpRequest(url)
     local reqFn = (http and http.request) or (http_request) or (syn and syn.request) or request
     if reqFn then
@@ -34,15 +30,16 @@ local function HttpRequest(url)
     end
 end
 
--- Простая графическая форма для ввода ключа (UI)
 local function CreateKeyUI()
     local ScreenGui = Instance.new("ScreenGui")
     local MainFrame = Instance.new("Frame")
     local Title = Instance.new("TextLabel")
     local KeyInput = Instance.new("TextBox")
     local SubmitBtn = Instance.new("TextButton")
-    local StatusLabel = Instance.new("TextLabel")
-    local UICorner = Instance.new("UICorner")
+    
+    -- Информационные строки
+    local StatusLabel = Instance.new("TextLabel")      -- Строка 1: Статус проверки
+    local ExpireLabel = Instance.new("TextLabel")      -- Строка 2: Осталось времени подписки
 
     local CoreGui = gethui and gethui() or game:GetService("CoreGui")
     if CoreGui:FindFirstChild("InkKeySystemUI") then
@@ -55,8 +52,8 @@ local function CreateKeyUI()
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
-    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
-    MainFrame.Size = UDim2.new(0, 320, 0, 180)
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
+    MainFrame.Size = UDim2.new(0, 320, 0, 220)
     MainFrame.Active = true
     MainFrame.Draggable = true
 
@@ -68,16 +65,16 @@ local function CreateKeyUI()
     Title.Parent = MainFrame
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 0, 0, 10)
-    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.Size = UDim2.new(1, 0, 0, 25)
     Title.Font = Enum.Font.SourceSansBold
-    Title.Text = "INK HUB — Авторизация"
+    Title.Text = "INK HUB — АВТОРИЗАЦИЯ"
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextSize = 18
 
     KeyInput.Name = "KeyInput"
     KeyInput.Parent = MainFrame
     KeyInput.BackgroundColor3 = Color3.fromRGB(36, 36, 42)
-    KeyInput.Position = UDim2.new(0.1, 0, 0.3, 0)
+    KeyInput.Position = UDim2.new(0.1, 0, 0.22, 0)
     KeyInput.Size = UDim2.new(0.8, 0, 0, 35)
     KeyInput.Font = Enum.Font.SourceSans
     KeyInput.PlaceholderText = "Введите лицензионный ключ..."
@@ -92,26 +89,38 @@ local function CreateKeyUI()
     SubmitBtn.Name = "SubmitBtn"
     SubmitBtn.Parent = MainFrame
     SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-    SubmitBtn.Position = UDim2.new(0.1, 0, 0.58, 0)
+    SubmitBtn.Position = UDim2.new(0.1, 0, 0.44, 0)
     SubmitBtn.Size = UDim2.new(0.8, 0, 0, 35)
     SubmitBtn.Font = Enum.Font.SourceSansBold
-    SubmitBtn.Text = "ПРОВЕРИТЬ КЛЮЧ"
+    SubmitBtn.Text = "АКТИВИРОВАТЬ / ВОЙТИ"
     SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SubmitBtn.TextSize = 15
+    SubmitBtn.TextSize = 14
 
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 6)
     btnCorner.Parent = SubmitBtn
 
+    -- 1-я строка: Статус подключения
     StatusLabel.Name = "StatusLabel"
     StatusLabel.Parent = MainFrame
     StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Position = UDim2.new(0.1, 0, 0.8, 0)
-    StatusLabel.Size = UDim2.new(0.8, 0, 0, 25)
+    StatusLabel.Position = UDim2.new(0.05, 0, 0.65, 0)
+    StatusLabel.Size = UDim2.new(0.9, 0, 0, 20)
     StatusLabel.Font = Enum.Font.SourceSans
-    StatusLabel.Text = ""
-    StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    StatusLabel.Text = "Статус: Ожидание ввода ключа..."
+    StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     StatusLabel.TextSize = 13
+
+    -- 2-я строка: Подписка (сколько осталось)
+    ExpireLabel.Name = "ExpireLabel"
+    ExpireLabel.Parent = MainFrame
+    ExpireLabel.BackgroundTransparency = 1
+    ExpireLabel.Position = UDim2.new(0.05, 0, 0.77, 0)
+    ExpireLabel.Size = UDim2.new(0.9, 0, 0, 20)
+    ExpireLabel.Font = Enum.Font.SourceSansBold
+    ExpireLabel.Text = "Подписка: Не активирована"
+    ExpireLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
+    ExpireLabel.TextSize = 13
 
     SubmitBtn.MouseButton1Click:Connect(function()
         local inputKey = KeyInput.Text:gsub("%s+", "")
@@ -121,8 +130,10 @@ local function CreateKeyUI()
             return
         end
 
-        StatusLabel.Text = "Проверка ключа в базе..."
+        StatusLabel.Text = "Проверка ключа..."
         StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+        ExpireLabel.Text = "Запрос к серверу..."
+        ExpireLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 
         task.spawn(function()
             local hwid = GetHWID()
@@ -145,28 +156,36 @@ local function CreateKeyUI()
 
                 if decodeSuccess and response then
                     if response.status == "success" and response.script then
-                        StatusLabel.Text = "Успешно! Загрузка..."
+                        StatusLabel.Text = "Успешно: Доступ получен!"
                         StatusLabel.TextColor3 = Color3.fromRGB(75, 255, 75)
-                        task.wait(1)
+                        
+                        -- Вывод 3-й ключевой строчки: Срок действия
+                        if response.expiresIn then
+                            ExpireLabel.Text = "Подписка активна: осталось " .. tostring(response.expiresIn)
+                            ExpireLabel.TextColor3 = Color3.fromRGB(0, 220, 120)
+                        end
+
+                        task.wait(1.5)
                         ScreenGui:Destroy()
 
-                        -- Динамическое выполнение подгруженного кода
                         local executable, err = loadstring(response.script)
                         if executable then
                             executable()
                         else
-                            warn("[INK-LOADER]: Ошибка компиляции пайлоада: " .. tostring(err))
+                            warn("[INK-LOADER]: Ошибка подгрузки софта: " .. tostring(err))
                         end
                     else
-                        StatusLabel.Text = response.message or "Неверный ключ."
+                        StatusLabel.Text = "Ошибка: " .. (response.message or "Отказано в доступе")
                         StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
+                        ExpireLabel.Text = "Подписка: Недействительна"
+                        ExpireLabel.TextColor3 = Color3.fromRGB(150, 50, 50)
                     end
                 else
-                    StatusLabel.Text = "Ошибка ответа сервера."
+                    StatusLabel.Text = "Ошибка: Некорректный JSON ответа"
                     StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
                 end
             else
-                StatusLabel.Text = "Ошибка подключения к серверу."
+                StatusLabel.Text = "Ошибка подключения к Render!"
                 StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
             end
         end)
