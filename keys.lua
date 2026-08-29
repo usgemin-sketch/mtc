@@ -1,5 +1,5 @@
 -- =================================================================
--- Client Key System Loader v2 (30-day Expiration Tracker)
+-- Client Key System Loader v2.1 (Fixed UI Lifetime & Time Display)
 -- =================================================================
 
 local SERVER_URL = "https://server-ca9b.onrender.com"
@@ -31,6 +31,11 @@ local function HttpRequest(url)
 end
 
 local function CreateKeyUI()
+    local CoreGui = gethui and gethui() or game:GetService("CoreGui")
+    if CoreGui:FindFirstChild("InkKeySystemUI") then
+        CoreGui.InkKeySystemUI:Destroy()
+    end
+
     local ScreenGui = Instance.new("ScreenGui")
     local MainFrame = Instance.new("Frame")
     local Title = Instance.new("TextLabel")
@@ -38,22 +43,17 @@ local function CreateKeyUI()
     local SubmitBtn = Instance.new("TextButton")
     
     -- Информационные строки
-    local StatusLabel = Instance.new("TextLabel")      -- Строка 1: Статус проверки
-    local ExpireLabel = Instance.new("TextLabel")      -- Строка 2: Осталось времени подписки
-
-    local CoreGui = gethui and gethui() or game:GetService("CoreGui")
-    if CoreGui:FindFirstChild("InkKeySystemUI") then
-        CoreGui.InkKeySystemUI:Destroy()
-    end
+    local StatusLabel = Instance.new("TextLabel")      -- Строка 1: Статус
+    local ExpireLabel = Instance.new("TextLabel")      -- Строка 2: Время подписки
 
     ScreenGui.Name = "InkKeySystemUI"
     ScreenGui.Parent = CoreGui
 
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
-    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
-    MainFrame.Size = UDim2.new(0, 320, 0, 220)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -115)
+    MainFrame.Size = UDim2.new(0, 320, 0, 230)
     MainFrame.Active = true
     MainFrame.Draggable = true
 
@@ -73,8 +73,8 @@ local function CreateKeyUI()
 
     KeyInput.Name = "KeyInput"
     KeyInput.Parent = MainFrame
-    KeyInput.BackgroundColor3 = Color3.fromRGB(36, 36, 42)
-    KeyInput.Position = UDim2.new(0.1, 0, 0.22, 0)
+    KeyInput.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
+    KeyInput.Position = UDim2.new(0.1, 0, 0.20, 0)
     KeyInput.Size = UDim2.new(0.8, 0, 0, 35)
     KeyInput.Font = Enum.Font.SourceSans
     KeyInput.PlaceholderText = "Введите лицензионный ключ..."
@@ -89,7 +89,7 @@ local function CreateKeyUI()
     SubmitBtn.Name = "SubmitBtn"
     SubmitBtn.Parent = MainFrame
     SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-    SubmitBtn.Position = UDim2.new(0.1, 0, 0.44, 0)
+    SubmitBtn.Position = UDim2.new(0.1, 0, 0.40, 0)
     SubmitBtn.Size = UDim2.new(0.8, 0, 0, 35)
     SubmitBtn.Font = Enum.Font.SourceSansBold
     SubmitBtn.Text = "АКТИВИРОВАТЬ / ВОЙТИ"
@@ -100,26 +100,26 @@ local function CreateKeyUI()
     btnCorner.CornerRadius = UDim.new(0, 6)
     btnCorner.Parent = SubmitBtn
 
-    -- 1-я строка: Статус подключения
+    -- 1-я строка статуса
     StatusLabel.Name = "StatusLabel"
     StatusLabel.Parent = MainFrame
     StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Position = UDim2.new(0.05, 0, 0.65, 0)
-    StatusLabel.Size = UDim2.new(0.9, 0, 0, 20)
+    StatusLabel.Position = UDim2.new(0.05, 0, 0.62, 0)
+    StatusLabel.Size = UDim2.new(0.9, 0, 0, 22)
     StatusLabel.Font = Enum.Font.SourceSans
-    StatusLabel.Text = "Статус: Ожидание ввода ключа..."
+    StatusLabel.Text = "Статус: Ожидание ввода..."
     StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     StatusLabel.TextSize = 13
 
-    -- 2-я строка: Подписка (сколько осталось)
+    -- 2-я строка статуса (остаток времени подписки)
     ExpireLabel.Name = "ExpireLabel"
     ExpireLabel.Parent = MainFrame
     ExpireLabel.BackgroundTransparency = 1
-    ExpireLabel.Position = UDim2.new(0.05, 0, 0.77, 0)
-    ExpireLabel.Size = UDim2.new(0.9, 0, 0, 20)
+    ExpireLabel.Position = UDim2.new(0.05, 0, 0.76, 0)
+    ExpireLabel.Size = UDim2.new(0.9, 0, 0, 22)
     ExpireLabel.Font = Enum.Font.SourceSansBold
     ExpireLabel.Text = "Подписка: Не активирована"
-    ExpireLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
+    ExpireLabel.TextColor3 = Color3.fromRGB(130, 130, 130)
     ExpireLabel.TextSize = 13
 
     SubmitBtn.MouseButton1Click:Connect(function()
@@ -130,10 +130,11 @@ local function CreateKeyUI()
             return
         end
 
-        StatusLabel.Text = "Проверка ключа..."
+        SubmitBtn.Active = false
+        StatusLabel.Text = "Проверка ключа на сервере..."
         StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-        ExpireLabel.Text = "Запрос к серверу..."
-        ExpireLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        ExpireLabel.Text = "Ожидание ответа..."
+        ExpireLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 
         task.spawn(function()
             local hwid = GetHWID()
@@ -156,36 +157,43 @@ local function CreateKeyUI()
 
                 if decodeSuccess and response then
                     if response.status == "success" and response.script then
-                        StatusLabel.Text = "Успешно: Доступ получен!"
+                        StatusLabel.Text = "Доступ разрешён!"
                         StatusLabel.TextColor3 = Color3.fromRGB(75, 255, 75)
                         
-                        -- Вывод 3-й ключевой строчки: Срок действия
+                        -- Фиксируем отображение оставшегося времени
                         if response.expiresIn then
-                            ExpireLabel.Text = "Подписка активна: осталось " .. tostring(response.expiresIn)
-                            ExpireLabel.TextColor3 = Color3.fromRGB(0, 220, 120)
+                            ExpireLabel.Text = "Подписка: осталось " .. tostring(response.expiresIn)
+                            ExpireLabel.TextColor3 = Color3.fromRGB(0, 230, 120)
+                        else
+                            ExpireLabel.Text = "Подписка: Активна"
+                            ExpireLabel.TextColor3 = Color3.fromRGB(0, 230, 120)
                         end
 
-                        task.wait(1.5)
+                        -- Даём 2.5 секунды, чтобы пользователь прочитал остаток времени
+                        task.wait(2.5)
                         ScreenGui:Destroy()
 
                         local executable, err = loadstring(response.script)
                         if executable then
                             executable()
                         else
-                            warn("[INK-LOADER]: Ошибка подгрузки софта: " .. tostring(err))
+                            warn("[INK-LOADER]: Ошибка выполнения скрипта: " .. tostring(err))
                         end
                     else
-                        StatusLabel.Text = "Ошибка: " .. (response.message or "Отказано в доступе")
+                        SubmitBtn.Active = true
+                        StatusLabel.Text = "Ошибка: " .. (response.message or "Неверный ключ")
                         StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
-                        ExpireLabel.Text = "Подписка: Недействительна"
-                        ExpireLabel.TextColor3 = Color3.fromRGB(150, 50, 50)
+                        ExpireLabel.Text = "Подписка: Отказано"
+                        ExpireLabel.TextColor3 = Color3.fromRGB(200, 60, 60)
                     end
                 else
-                    StatusLabel.Text = "Ошибка: Некорректный JSON ответа"
+                    SubmitBtn.Active = true
+                    StatusLabel.Text = "Ошибка: Некорректный JSON от сервера"
                     StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
                 end
             else
-                StatusLabel.Text = "Ошибка подключения к Render!"
+                SubmitBtn.Active = true
+                StatusLabel.Text = "Ошибка: Нет связи с Render"
                 StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
             end
         end)
