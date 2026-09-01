@@ -6,7 +6,7 @@ local plr     = Players.LocalPlayer
 local GUI     = gethui()
 
 local SERVER = "https://server-1o6p.onrender.com"
-local LOOT   = "https://loot-link.com/s?78hlWHOq"
+local LOOT   = "https://loot-link.com/s?IB5G1kZ9"
 
 -- ── GUI ───────────────────────────────────────────────────────────
 local ScreenGui = Instance.new("ScreenGui")
