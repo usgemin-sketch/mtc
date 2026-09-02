@@ -8,14 +8,13 @@ local GUI     = gethui()
 local SERVER = "https://server-1o6p.onrender.com"
 local LOOT   = "https://loot-link.com/s?IB5G1kZ9"
 
--- ── GUI ───────────────────────────────────────────────────────────
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name         = "KeySystem"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent       = GUI
 
 local bg = Instance.new("Frame")
-bg.Size             = UDim2.new(0, 440, 0, 260)
+bg.Size             = UDim2.new(0,440,0,260)
 bg.Position         = UDim2.new(0.5,-220,0.5,-130)
 bg.BackgroundColor3 = Color3.fromRGB(10,10,16)
 bg.BorderSizePixel  = 0
@@ -27,15 +26,12 @@ stroke.Color       = Color3.fromRGB(100,108,255)
 stroke.Thickness   = 1.5
 stroke.Transparency = 0.4
 
--- accent top bar
 local topBar = Instance.new("Frame")
 topBar.Size             = UDim2.new(1,0,0,4)
 topBar.BackgroundColor3 = Color3.fromRGB(100,108,255)
 topBar.BorderSizePixel  = 0
 topBar.Parent           = bg
-
-local topBarCorner = Instance.new("UICorner",topBar)
-topBarCorner.CornerRadius = UDim.new(0,14)
+Instance.new("UICorner",topBar).CornerRadius = UDim.new(0,14)
 
 local title = Instance.new("TextLabel")
 title.Size             = UDim2.new(1,0,0,45)
@@ -57,7 +53,6 @@ sub.Font             = Enum.Font.Gotham
 sub.TextSize         = 12
 sub.Parent           = bg
 
--- divider
 local div = Instance.new("Frame")
 div.Size             = UDim2.new(1,-40,0,1)
 div.Position         = UDim2.new(0,20,0,78)
@@ -65,7 +60,6 @@ div.BackgroundColor3 = Color3.fromRGB(30,30,45)
 div.BorderSizePixel  = 0
 div.Parent           = bg
 
--- input
 local inputBg = Instance.new("Frame")
 inputBg.Size             = UDim2.new(1,-40,0,40)
 inputBg.Position         = UDim2.new(0,20,0,92)
@@ -77,7 +71,6 @@ Instance.new("UICorner",inputBg).CornerRadius = UDim.new(0,8)
 local inputStroke = Instance.new("UIStroke",inputBg)
 inputStroke.Color       = Color3.fromRGB(40,40,65)
 inputStroke.Thickness   = 1
-inputStroke.Transparency = 0
 
 local input = Instance.new("TextBox")
 input.Size             = UDim2.new(1,-20,1,0)
@@ -92,7 +85,6 @@ input.TextSize         = 13
 input.ClearTextOnFocus = false
 input.Parent           = inputBg
 
--- status
 local statusL = Instance.new("TextLabel")
 statusL.Size             = UDim2.new(1,-40,0,16)
 statusL.Position         = UDim2.new(0,20,0,138)
@@ -103,7 +95,6 @@ statusL.Font             = Enum.Font.Gotham
 statusL.TextSize         = 11
 statusL.Parent           = bg
 
--- Activate button
 local activateBtn = Instance.new("TextButton")
 activateBtn.Size             = UDim2.new(0,180,0,40)
 activateBtn.Position         = UDim2.new(0,20,0,162)
@@ -116,7 +107,6 @@ activateBtn.BorderSizePixel  = 0
 activateBtn.Parent           = bg
 Instance.new("UICorner",activateBtn).CornerRadius = UDim.new(0,8)
 
--- Get Key button
 local getKeyBtn = Instance.new("TextButton")
 getKeyBtn.Size             = UDim2.new(0,180,0,40)
 getKeyBtn.Position         = UDim2.new(1,-200,0,162)
@@ -134,7 +124,6 @@ getStroke.Color       = Color3.fromRGB(100,108,255)
 getStroke.Thickness   = 1
 getStroke.Transparency = 0.4
 
--- version
 local ver = Instance.new("TextLabel")
 ver.Size             = UDim2.new(1,0,0,14)
 ver.Position         = UDim2.new(0,0,1,-18)
@@ -145,10 +134,10 @@ ver.Font             = Enum.Font.Gotham
 ver.TextSize         = 10
 ver.Parent           = bg
 
--- ── Logic ─────────────────────────────────────────────────────────
+-- Logic
 getKeyBtn.MouseButton1Click:Connect(function()
     pcall(function() setclipboard(LOOT) end)
-    statusL.Text       = "Link copied! Open browser → complete → copy key"
+    statusL.Text       = "Link copied! Open browser, complete tasks, copy key"
     statusL.TextColor3 = Color3.fromRGB(100,108,255)
     getKeyBtn.Text     = "Copied!"
     task.wait(2)
@@ -163,23 +152,23 @@ local function tryActivate()
         return
     end
 
-    activateBtn.Text       = "Loading..."
+    activateBtn.Text             = "Loading..."
     activateBtn.BackgroundColor3 = Color3.fromRGB(60,65,160)
-    statusL.Text           = ""
+    statusL.Text                 = ""
 
     local ok, result = pcall(function()
         return game:HttpGet(SERVER .. "/hub?key=" .. key, true)
     end)
 
     if ok and result and #result > 50 then
-        statusL.Text       = "Key valid! Loading hub..."
+        statusL.Text       = "Loading hub..."
         statusL.TextColor3 = Color3.fromRGB(80,220,120)
         inputStroke.Color  = Color3.fromRGB(80,220,120)
         task.wait(0.8)
         ScreenGui:Destroy()
         loadstring(result)()
     else
-        statusL.Text       = "Invalid or expired key — get a new one"
+        statusL.Text       = "Invalid or expired key"
         statusL.TextColor3 = Color3.fromRGB(220,80,80)
         inputStroke.Color  = Color3.fromRGB(220,80,80)
         activateBtn.Text   = "Activate Key"
